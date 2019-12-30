@@ -111,5 +111,7 @@ func Start(nanoNodeUrl1 string) {
 	nanoNodeUrl = nanoNodeUrl1
     http.HandleFunc("/", handleRequest)
 
-    http.ListenAndServe(":8080", nil)
+	var localAddr = ":8080"
+	log.Println("Starting listening on ", localAddr, " ...")
+    http.ListenAndServe(localAddr, nil)
 }
