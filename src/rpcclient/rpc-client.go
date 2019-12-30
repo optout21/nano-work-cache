@@ -1,3 +1,5 @@
+// Copyright © 2019-2019 catenocrypt.  See LICENCE file for license information.
+
 package rpcclient
 
 import (
