@@ -12,11 +12,6 @@ func check(err error) {
 	}
 }
 
-func getRpcUrl() string {
-	return "http://54.227.21.124:7176"
-	//return "https://nanovault.io/api/node-api"
-}
-
 func negDiff(diff uint64) uint64 {
 	return 0xffffffffffffffff - diff
 }
@@ -37,7 +32,9 @@ func rpcCallPrint(url string, reqJson string) {
 }
 
 func main() {
-	var url = "http://54.227.21.124:7176"
+	var url = "http://localhost:8080"
+	//var url = "http://54.227.21.124:7176"
+	//var url = "https://nanovault.io/api/node-api"
 	
 	rpcCallPrint(url, `{"action":"block_count"}`)
 

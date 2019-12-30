@@ -51,3 +51,8 @@ func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
 	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, 
 		"fresh"}, nil
 }
+
+// get default difficulty -- TODO should come from RPC, cached
+func GetDefaultDifficulty() uint64 {
+	return 0xffffffc000000000;
+}

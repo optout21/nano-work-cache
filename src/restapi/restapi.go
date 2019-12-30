@@ -76,23 +76,28 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 		err := json.Unmarshal(respBody, &workGenerate)
 		if err != nil {
 			fmt.Fprintln(w, `{"error":"work_generate parse error"}`)
-		} else {
-			log.Println("work_generate req", workGenerate)
-			difficulty, err := strconv.ParseUint(workGenerate.Difficulty, 16, 64)
-			if (err != nil) {
-				// diff not present
-				fmt.Fprintln(w, `{"error":"work_generate difficulty parse error"}`)
-			} else {
-				// handle
-				workResp, err := workcache.GetCachedWork(nanoNodeUrl, workGenerate.Hash, difficulty)
-				if (err != nil) {
-					fmt.Fprintln(w, `{"error":"` + err.Error() + `"}`)
-				} else {
-					log.Println("work_generate resp", workResp)
-					fmt.Fprintln(w, workResponseToJson(workResp))
-				}
-			}
+			return;
 		}
+		log.Println("work_generate req", workGenerate)
+		var difficulty uint64 = workcache.GetDefaultDifficulty()
+		if (len(workGenerate.Difficulty) > 0) {
+			difficultyParsed, err := strconv.ParseUint(workGenerate.Difficulty, 16, 64)
+			if (err != nil) {
+				// diff present, but could not parse
+				fmt.Fprintln(w, `{"error":"work_generate difficulty parse error"}`)
+				return;
+			}
+			difficulty = difficultyParsed
+		}
+		// handle
+		workResp, err := workcache.GetCachedWork(nanoNodeUrl, workGenerate.Hash, difficulty)
+		if (err != nil) {
+			fmt.Fprintln(w, `{"error":"` + err.Error() + `"}`)
+			return
+		}
+		log.Println("work_generate resp", workResp)
+		fmt.Fprintln(w, workResponseToJson(workResp))
+
 	default:
 		fmt.Fprintln(w, `{"error":"unknown action","action":"` + action + "}")
 	}

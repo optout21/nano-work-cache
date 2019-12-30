@@ -1,6 +1,6 @@
 # Nano Work Cache
 
-Utility for work computation by light clients.  Nano PoW generation proxy and cache, written in Go.
+Nano PoW computation helper service for light clients.  Nano PoW generation proxy and cache, written in Go.
 
 ## Overview
 
@@ -27,4 +27,14 @@ The Nano Work Cache does not compute work itself, it just proxies work reqests t
 
 ## Setting up
 
-/TODO/
+```shell
+go src/main
+go run main.go
+```
+
+For testing, from another shell:
+
+```shell
+go src/sample
+go run sample.go
+```
