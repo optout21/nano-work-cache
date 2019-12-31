@@ -61,3 +61,8 @@ go run sample.go
 ## Usage by light wallets
 
 /TODO/
+
+## Not (yet) done
+
+- Periodically retrieve current difficulty from node
+- Listen on new blocks from node; if a new block is created for a recently used account, start work computation right away, without being requested
