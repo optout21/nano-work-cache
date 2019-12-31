@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"encoding/json"
 	"io/ioutil"
-	"fmt"
 )
 
 func RpcCall(url string, reqJson string) (respJson string, err error) {
@@ -51,20 +50,20 @@ func GetWork(url string, hash string, diff uint64) (WorkResponse, error) {
 		reqJson += `,"difficulty":"` + strconv.FormatUint(diff, 16) + `"`
 	}
 	reqJson += `}`
-	fmt.Println(reqJson)
+	//fmt.Println(reqJson)
 	respString, err := RpcCall(url, reqJson)
 	var resp WorkResponse
 	if (err != nil) {
 		return resp, err
 	}
 	// parse json
-	fmt.Println(respString)
+	//fmt.Println(respString)
 	var respStruct1 WorkResponseJson
 	err = json.Unmarshal([]byte(respString), &respStruct1)
 	if (err != nil) {
 		return resp, err
 	}
-	fmt.Println(respStruct1)
+	//fmt.Println(respStruct1)
 	difficulty, err := strconv.ParseUint(respStruct1.Difficulty, 16, 64)
 	if (err != nil) {
 		// diff not present, take input (in reality actual difficulty is usually higher)

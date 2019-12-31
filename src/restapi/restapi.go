@@ -107,11 +107,10 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 
 var nanoNodeUrl string
 
-func Start(nanoNodeUrl1 string) {
+func Start(nanoNodeUrl1 string, listenIpPort string) {
 	nanoNodeUrl = nanoNodeUrl1
     http.HandleFunc("/", handleRequest)
 
-	var localAddr = ":8080"
-	log.Println("Starting listening on ", localAddr, " ...")
-    http.ListenAndServe(localAddr, nil)
+	log.Println("Starting listening on", listenIpPort, "...")
+    http.ListenAndServe(listenIpPort, nil)
 }

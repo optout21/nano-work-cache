@@ -1,0 +1,5 @@
+[Main]
+# URL of the remote work generation node
+NodeRpc = "http://path.to.nanonode:port/apipath/"
+# Binding address of the service, ":7176" by default
+ListenIpPort = ":7176"

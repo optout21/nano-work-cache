@@ -3,8 +3,8 @@
 package main
 
 import (
-	//"fmt"
 	"github.com/catenocrypt/nano-work-cache/restapi"
+	"github.com/catenocrypt/nano-work-cache/workcache"
 )
 
 func check(err error) {
@@ -14,6 +14,11 @@ func check(err error) {
 }
 
 func main() {
-	var url = "http://54.227.21.124:7176"
-	restapi.Start(url)
+	rpcUrl := workcache.ConfigGetString("Main.NodeRpc")
+	if (len(rpcUrl) == 0) {
+		panic("No value configured for Main.NodeRpc")
+	}
+	listenIpPort := workcache.ConfigGetString("Main.ListenIpPort")
+
+	restapi.Start(rpcUrl, listenIpPort)
 }

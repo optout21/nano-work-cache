@@ -5,6 +5,7 @@
 *.so
 *.dylib
 src/main/main
+src/main/config.toml
 
 # Test binary, built with `go test -c`
 *.test
