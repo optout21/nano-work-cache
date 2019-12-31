@@ -54,8 +54,8 @@ go run main.go
 For testing, from another shell:
 
 ```shell
-cd src/sample
-go run sample.go
+cd sample/client
+go run sample_client.go
 ```
 
 ## Usage by light wallets
