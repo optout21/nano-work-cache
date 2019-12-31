@@ -17,7 +17,7 @@ type WorkResponse struct {
 	Source string
 }
 
-func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
+func GetCachedWork(url string, hash string, diff uint64, inBackground bool) (WorkResponse, error) {
 	cachedEntry, ok := getFromCache(hash)
 	if (ok) {
 		if cacheIsValid(cachedEntry) {
@@ -37,11 +37,26 @@ func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
 		} else {
 			// found in cache, but not (yet) valid
 			// TODO we could wait here, to avoid starting again
-			log.Println("WARNING", "Work in progress, yet staring again, hash", hash)
+			log.Println("WARNING", "Work in progress, yet starting again, hash", hash)
 		}
 	}
-	// not found in cache, or being computed
-	// mask start in cache
+	// We need to call into RPC node for work.
+	// We can do it sync or async in the background
+	if (!inBackground) {
+		// sync call
+		resp, err := callRpcWork(url, hash, diff)
+		return resp, err
+	} else {
+		// asyn call, ignore result
+		go callRpcWork(url, hash, diff)
+		// return empty result
+		return WorkResponse {hash, "0", diff, 1.0, "started_in_background"}, nil
+	}
+}
+
+/// Request work from remote RPC node
+func callRpcWork(url string, hash string, diff uint64) (WorkResponse, error) {
+	// mark start in cache
 	addToCacheStart(hash)
 	// trigger work
 	resp, err := rpcclient.GetWork(url, hash, diff)
@@ -50,8 +65,8 @@ func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
 	}
 	// we have response, add to cache
 	addToCache(resp)
-	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, 
-		"fresh"}, nil
+	log.Println("Work resp from node, added to cache; work_generate resp", resp)
+	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh"}, nil
 }
 
 // get default difficulty -- TODO should come from RPC, cached

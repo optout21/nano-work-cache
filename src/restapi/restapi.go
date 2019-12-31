@@ -65,6 +65,11 @@ type workGenerateJson struct {
 	Difficulty string
 }
 
+type workPregenerateByHashJson struct {
+	Action string
+	Hash string
+}
+
 /// Not the normal Json Encode way, due to the difficult hex formatting.  Using simple string concatenation.
 func workResponseToJson(resp workcache.WorkResponse) string {
 	return fmt.Sprintf(`{"hash":"%v","work":"%v","difficulty":"%x","multiplier":"%v","source":"%v"}`,
@@ -92,7 +97,25 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 			difficulty = difficultyParsed
 		}
 		// handle
-		workResp, err := workcache.GetCachedWork(nanoNodeUrl, workGenerate.Hash, difficulty)
+		workResp, err := workcache.GetCachedWork(nanoNodeUrl, workGenerate.Hash, difficulty, false)
+		if (err != nil) {
+			fmt.Fprintln(w, `{"error":"` + err.Error() + `"}`)
+			return
+		}
+		log.Println("work_generate resp", workResp)
+		fmt.Fprintln(w, workResponseToJson(workResp))
+
+	case "work_pregenerate_by_hash":
+		var workPregenerateByHash workPregenerateByHashJson
+		err := json.Unmarshal(respBody, &workPregenerateByHash)
+		if err != nil {
+			fmt.Fprintln(w, `{"error":"work_pregenerate_by_hash parse error"}`)
+			return;
+		}
+		log.Println("work_pregenerate_by_hash req", workPregenerateByHash)
+		var difficulty uint64 = workcache.GetDefaultDifficulty()
+		// handle
+		workResp, err := workcache.GetCachedWork(nanoNodeUrl, workPregenerateByHash.Hash, difficulty, true)
 		if (err != nil) {
 			fmt.Fprintln(w, `{"error":"` + err.Error() + `"}`)
 			return
