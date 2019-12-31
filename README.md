@@ -19,7 +19,7 @@ Light wallets need only to fire a simple message to trigger work computation in 
 when it is needed.  At that time PoW will be retured fast from the cache.
 The Nano Work Cache does not compute work itself, it just proxies work reqests to a node, and caches results.
 
-[Diagram]
+![diagram](https://github.com/catenocrypt/nano-work-cache/blob/master/doc/nano_work_cache_diag.png)
 
 ## Usage by light wallets
 
