@@ -49,14 +49,14 @@ func main() {
 	
 	//rpcCallPrint(url, `{"action": "work_generate","hash": "718CC2121C3E641059BC1C2CFC45666C99E8AE922F7A807B7D07B62C995D79E2","difficulty": "ffffffd21c3933f3"}`)
 	//var diff1 uint64 = 0xffffffc800000000
-	resp, err := workcache.GetCachedWork(url, hash1, 0, false)
+	resp, err := workcache.GetCachedWork(url, hash1, 0)
 	if (err != nil) {
 		fmt.Println("Error:", err)
 		return
 	}
 	fmt.Println("Work res", resp)
 	
-	resp, err = workcache.GetCachedWork(url, hash1, 0, false)
+	resp, err = workcache.GetCachedWork(url, hash1, 0)
 	if (err != nil) {
 		fmt.Println("Error:", err)
 		return
@@ -66,7 +66,7 @@ func main() {
 	var diff uint64 = 0xffffffc000000000
 	for negDiff(diff) > 0x800000000 {
 		fmt.Printf("diff %x %x\n", diff, negDiff(diff))
-		resp, err = workcache.GetCachedWork(url, hash1, diff, false)
+		resp, err = workcache.GetCachedWork(url, hash1, diff)
 		if (err != nil) {
 			fmt.Println("Error:", err)
 			return

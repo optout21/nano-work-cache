@@ -15,3 +15,5 @@ src/main/config.toml
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+src/go.sum

@@ -17,7 +17,7 @@ type WorkResponse struct {
 	Source string
 }
 
-func GetCachedWork(url string, hash string, diff uint64, inBackground bool) (WorkResponse, error) {
+func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
 	cachedEntry, ok := getFromCache(hash)
 	if (ok) {
 		if cacheIsValid(cachedEntry) {
@@ -41,17 +41,8 @@ func GetCachedWork(url string, hash string, diff uint64, inBackground bool) (Wor
 		}
 	}
 	// We need to call into RPC node for work.
-	// We can do it sync or async in the background
-	if (!inBackground) {
-		// sync call
-		resp, err := callRpcWork(url, hash, diff)
-		return resp, err
-	} else {
-		// asyn call, ignore result
-		go callRpcWork(url, hash, diff)
-		// return empty result
-		return WorkResponse {hash, "0", diff, 1.0, "started_in_background"}, nil
-	}
+	resp, err := callRpcWork(url, hash, diff)
+	return resp, err
 }
 
 /// Request work from remote RPC node
@@ -64,6 +55,7 @@ func callRpcWork(url string, hash string, diff uint64) (WorkResponse, error) {
 		return WorkResponse{}, err
 	}
 	// we have response, add to cache
+	if (len(resp.Hash) == 0) { resp.Hash = hash } // for the case if hash is missing in the response
 	addToCache(resp)
 	log.Println("Work resp from node, added to cache; work_generate resp", resp)
 	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh"}, nil

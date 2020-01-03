@@ -97,13 +97,14 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 			difficulty = difficultyParsed
 		}
 		// handle
-		workResp, err := workcache.GetCachedWork(nanoNodeUrl, workGenerate.Hash, difficulty, false)
+		workResp, err := workcache.GetCachedWork(nanoNodeUrl, workGenerate.Hash, difficulty)
 		if (err != nil) {
 			fmt.Fprintln(w, `{"error":"` + err.Error() + `"}`)
 			return
 		}
 		log.Println("work_generate resp", workResp)
 		fmt.Fprintln(w, workResponseToJson(workResp))
+		break
 
 	case "work_pregenerate_by_hash":
 		var workPregenerateByHash workPregenerateByHashJson
@@ -113,15 +114,13 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 			return;
 		}
 		log.Println("work_pregenerate_by_hash req", workPregenerateByHash)
+		var hash = workPregenerateByHash.Hash
 		var difficulty uint64 = workcache.GetDefaultDifficulty()
-		// handle
-		workResp, err := workcache.GetCachedWork(nanoNodeUrl, workPregenerateByHash.Hash, difficulty, true)
-		if (err != nil) {
-			fmt.Fprintln(w, `{"error":"` + err.Error() + `"}`)
-			return
-		}
-		log.Println("work_generate resp", workResp)
-		fmt.Fprintln(w, workResponseToJson(workResp))
+		// start work asynchronously
+		go workcache.GetCachedWork(nanoNodeUrl, hash, difficulty)
+		// return response, only hash
+		fmt.Fprintln(w, fmt.Sprintf(`{"hash":"%v","source":"started_in_background"}`, hash))
+		break
 
 	default:
 		fmt.Fprintln(w, `{"error":"unknown action","action":"` + action + "}")
