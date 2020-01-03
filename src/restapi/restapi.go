@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"github.com/catenocrypt/nano-work-cache/workcache"
+	"github.com/catenocrypt/nano-work-cache/rpcclient"
 )
 
 type actionJson struct {
@@ -70,6 +71,11 @@ type workPregenerateByHashJson struct {
 	Hash string
 }
 
+type workPregenerateByAccountJson struct {
+	Action string
+	Account string
+}
+
 /// Not the normal Json Encode way, due to the difficult hex formatting.  Using simple string concatenation.
 func workResponseToJson(resp workcache.WorkResponse) string {
 	return fmt.Sprintf(`{"hash":"%v","work":"%v","difficulty":"%x","multiplier":"%v","source":"%v"}`,
@@ -83,7 +89,7 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 		err := json.Unmarshal(respBody, &workGenerate)
 		if err != nil {
 			fmt.Fprintln(w, `{"error":"work_generate parse error"}`)
-			return;
+			return
 		}
 		log.Println("work_generate req", workGenerate)
 		var difficulty uint64 = workcache.GetDefaultDifficulty()
@@ -92,7 +98,7 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 			if (err != nil) {
 				// diff present, but could not parse
 				fmt.Fprintln(w, `{"error":"work_generate difficulty parse error"}`)
-				return;
+				return
 			}
 			difficulty = difficultyParsed
 		}
@@ -111,7 +117,7 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 		err := json.Unmarshal(respBody, &workPregenerateByHash)
 		if err != nil {
 			fmt.Fprintln(w, `{"error":"work_pregenerate_by_hash parse error"}`)
-			return;
+			return
 		}
 		log.Println("work_pregenerate_by_hash req", workPregenerateByHash)
 		var hash = workPregenerateByHash.Hash
@@ -120,7 +126,30 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 		go workcache.GetCachedWork(nanoNodeUrl, hash, difficulty)
 		// return response, only hash
 		fmt.Fprintln(w, fmt.Sprintf(`{"hash":"%v","source":"started_in_background"}`, hash))
-		break
+		return
+
+	case "work_pregenerate_by_account":
+		var workPregenerateByAccount workPregenerateByAccountJson
+		err := json.Unmarshal(respBody, &workPregenerateByAccount)
+		if err != nil {
+			fmt.Fprintln(w, `{"error":"work_pregenerate_by_account parse error"}`)
+			return
+		}
+		log.Println("work_pregenerate_by_account req", workPregenerateByAccount)
+		var account = workPregenerateByAccount.Account
+		// get frontier of account
+		hash, err := rpcclient.GetFrontier(nanoNodeUrl, account)
+		if (err != nil) {
+			fmt.Fprintln(w, `{"error":"could not get frontier of account"}`)
+			return
+		}
+		log.Println("Frontier block of account", account, "is", hash)
+		var difficulty uint64 = workcache.GetDefaultDifficulty()
+		// start work asynchronously
+		go workcache.GetCachedWork(nanoNodeUrl, hash, difficulty)
+		// return response, only hash
+		fmt.Fprintln(w, fmt.Sprintf(`{"hash":"%v","source":"started_in_background"}`, hash))
+		return
 
 	default:
 		fmt.Fprintln(w, `{"error":"unknown action","action":"` + action + "}")

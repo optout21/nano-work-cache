@@ -3,9 +3,12 @@
 package rpcclient
 
 import (
+	"errors"
+	//"fmt"
 	"net/http"
 	"bytes"
 	"strconv"
+	"strings"
 	"encoding/json"
 	"io/ioutil"
 )
@@ -43,7 +46,7 @@ type WorkResponseJson struct {
 	Multiplier string
 }
 
-// difficulty may be missing (0)
+// work_generate.  Difficulty may be missing (0)
 func GetWork(url string, hash string, diff uint64) (WorkResponse, error) {
 	reqJson := `{"action":"work_generate","hash":"` + hash + `"`
 	if (diff != 0) {
@@ -76,4 +79,38 @@ func GetWork(url string, hash string, diff uint64) (WorkResponse, error) {
 	}
 	resp = WorkResponse{respStruct1.Hash, respStruct1.Work, difficulty, multiplier}
 	return resp, nil
+}
+
+type AccountFrontiersRespJson struct {
+	Frontiers map[string]string
+}
+
+// Get frontier blocks for accounts, accounts_frontiers
+func GetFrontiers(url string, accounts []string) (map[string]string, error) {
+	reqJson := `{"action":"accounts_frontiers","accounts":["` + strings.Join(accounts[:], `","`) + `"]}`
+	//fmt.Println(reqJson)
+	respString, err := RpcCall(url, reqJson)
+	if (err != nil) {
+		return nil, err
+	}
+	// parse json
+	//fmt.Println(respString)
+	var respStruct1 AccountFrontiersRespJson
+	err = json.Unmarshal([]byte(respString), &respStruct1)
+	if (err != nil) {
+		return nil, err
+	}
+	//fmt.Println(respStruct1)
+	return respStruct1.Frontiers, nil
+}
+
+// Get frontier block for an account, using accounts_frontiers
+func GetFrontier(url string, account string) (string, error) {
+	accounts, err := GetFrontiers(url, []string{account, account})
+	if (err != nil) { return "", err }
+	frontier := accounts[account]
+	if (len(frontier) == 0) {
+		return "", errors.New("Could not find account in accounts_frontiers")
+	}
+	return frontier, nil
 }

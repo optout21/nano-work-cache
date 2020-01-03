@@ -60,6 +60,20 @@ go run sample.go
 
 ## Usage by light wallets
 
+Wallets have two different actions to make:
+
+1. When the wallet is opened, initiate work precompute, so work is available by the time it is needed.
+2. When user makes a send (or a new block is created for some other reason), request work normally.
+By this time the work should be available from the cache.
+
+For the precompute, the wallet can do a regular work call, or a simplified special precompute call.  
+The options are:
+
+- Fully transparent work_generate request (with difficulty).  Wallet has to disregard the result, just fire-and-forget.
+  _Variant:_ without difficulty, difficulty is filled by NanoWorkCache.
+- Special async `work_pregenerate_by_hash` call; only the hash is needed.  
+  _Variant:_  work_pregenerate_by_account, when not event the last block hash is needed, only the account.
+
 ### Fully transparent work_generate request with difficulty
 
 Clients can do a `work_generate` request, exactly like they would call to a node.
@@ -121,17 +135,21 @@ curl -d '{"action":"work_pregenerate_by_hash","hash":"DDDA8C4CB5825FF4F5D00C5F92
 
 ### Simplified account-based precompute call
 
-/TODO/
-
 This is a simplified call for work precompute: the client only has to specify the relevant account, nothing else.
+The action is `work_pregenerate_by_account`.
 
 - No need to wait for the response, as this call returns immediately
 - No need to keep track of current last block hash
 - No need to keep track of current difficulty
 
+Example:
+
+```shell
+curl -d '{"action":"work_pregenerate_by_account","account":"nano_3rpb7ddcd6kux978gkwxh1i1s6cyn7pw3mzdb9aq7jbtsdfzceqdt3jureju"}' http://localhost:7176
+```
+
 ## Not (yet) done
 
-- Simplified account-based precompute call
 - If work is requested while already running, wait for the result instead of triggering again
 - Periodically retrieve current difficulty from node
 - Listen on new blocks from node; if a new block is created for a recently used account, start work computation right away, without being requested
