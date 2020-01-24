@@ -24,6 +24,7 @@ func readConfigIfNeeded() {
 	// read config file
 	viper.SetConfigName(configFileName) // name of config file (without extension)
 	viper.AddConfigPath(".")      // optionally look for config in the working directory
+	viper.AddConfigPath("/")
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil { // Handle errors reading the config file
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
