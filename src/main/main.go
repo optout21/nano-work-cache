@@ -5,6 +5,7 @@ package main
 import (
 	"github.com/catenocrypt/nano-work-cache/restapi"
 	"github.com/catenocrypt/nano-work-cache/workcache"
+	"os"
 )
 
 func check(err error) {
@@ -14,6 +15,11 @@ func check(err error) {
 }
 
 func main() {
+	// first optional paramter is config file name
+	if (len(os.Args) > 1) {
+		workcache.SetConfigFile(os.Args[1])
+	}
+
 	rpcUrl := workcache.ConfigGetString("Main.NodeRpc")
 	if (len(rpcUrl) == 0) {
 		panic("No value configured for Main.NodeRpc")
