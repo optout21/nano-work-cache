@@ -152,7 +152,15 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 		return
 
 	default:
-		fmt.Fprintln(w, `{"error":"unknown action","action":"` + action + "}")
+		// proxy any other request unmodified
+		log.Println("transaprent proxying of action", action)
+		respJSON, err := rpcclient.MakeGenericCall(nanoNodeUrl, string(respBody))
+		if (err != nil) {
+			log.Println("RPC error:", err.Error())
+			fmt.Fprintln(w, `{"error":"RPC error: ` + err.Error() + `","action":"` + action + `"}`)
+			return
+		}
+		fmt.Fprintln(w, respJSON)
 	}
 }
 

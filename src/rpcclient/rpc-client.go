@@ -114,3 +114,13 @@ func GetFrontier(url string, account string) (string, error) {
 	}
 	return frontier, nil
 }
+
+/// Make a generic call to the RPC node
+func MakeGenericCall(url string, reqJSON string) (string, error) {
+	//fmt.Println(reqJson)
+	respString, err := RpcCall(url, reqJSON)
+	if (err != nil) {
+		return "", err
+	}
+	return respString, nil;
+}
