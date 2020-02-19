@@ -50,6 +50,7 @@ func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
 func callRpcWork(url string, hash string, diff uint64) (WorkResponse, error) {
 	// mark start in cache
 	addToCacheStart(hash)
+	log.Println("Requesting work from node for hash", hash)
 	// trigger work
 	resp, err := rpcclient.GetWork(url, hash, diff)
 	if (err != nil) {
