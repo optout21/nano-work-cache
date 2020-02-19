@@ -1,6 +1,7 @@
 # Nano Work Cache
 
-Nano PoW computation helper service for light clients.  Nano PoW generation proxy and cache, written in Go.
+Nano PoW computation helper service, relieve light clients from the burden of work precomputation.
+Nano PoW generation proxy and cache, written in Go.
 
 ## Overview
 
