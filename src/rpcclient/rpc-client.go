@@ -106,7 +106,7 @@ func GetFrontiers(url string, accounts []string) (map[string]string, error) {
 
 // Get frontier block for an account, using accounts_frontiers
 func GetFrontier(url string, account string) (string, error) {
-	accounts, err := GetFrontiers(url, []string{account, account})
+	accounts, err := GetFrontiers(url, []string{account})
 	if (err != nil) { return "", err }
 	frontier := accounts[account]
 	if (len(frontier) == 0) {

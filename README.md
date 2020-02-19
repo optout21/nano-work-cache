@@ -148,8 +148,22 @@ Example:
 curl -d '{"action":"work_pregenerate_by_account","account":"nano_3rpb7ddcd6kux978gkwxh1i1s6cyn7pw3mzdb9aq7jbtsdfzceqdt3jureju"}' http://localhost:7176
 ```
 
+### Account_balance request
+
+Even simpler: the client just makes an account_balance call when the wallet is started, to display the current balance.
+This call is forwarded to the node, and balance is returned.
+However, work precomputation is triggered, so when later a work is requested for the last block of this account, likely it will be delivered fast from cache.
+
+The accounts_balances call is similarly supported.
+
+```shell
+curl -d '{"action":"account_balance","account":"nano_3rpb7ddcd6kux978gkwxh1i1s6cyn7pw3mzdb9aq7jbtsdfzceqdt3jureju"}' http://localhost:7176
+```
+
 ## Not (yet) done
 
-- If work is requested while already running, wait for the result instead of triggering again
 - Periodically retrieve current difficulty from node
+- If work is requested while already running, wait for the result instead of triggering again
+- Save cache to external storage (file), to survive process restart
+- Run async work requests in worker threads, with limited number and a request queue
 - Listen on new blocks from node; if a new block is created for a recently used account, start work computation right away, without being requested
