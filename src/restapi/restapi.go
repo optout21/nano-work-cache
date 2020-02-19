@@ -76,6 +76,16 @@ type workPregenerateByAccountJson struct {
 	Account string
 }
 
+type accountBalanceJson struct {
+	Action string
+	Account string
+}
+
+type accountsBalancesJson struct {
+	Action string
+	Accounts []string
+}
+
 /// Not the normal Json Encode way, due to the difficult hex formatting.  Using simple string concatenation.
 func workResponseToJson(resp workcache.WorkResponse) string {
 	return fmt.Sprintf(`{"hash":"%v","work":"%v","difficulty":"%x","multiplier":"%v","source":"%v"}`,
@@ -137,19 +147,59 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 		}
 		log.Println("work_pregenerate_by_account req", workPregenerateByAccount)
 		var account = workPregenerateByAccount.Account
-		// get frontier of account
-		hash, err := rpcclient.GetFrontier(nanoNodeUrl, account)
-		if (err != nil) {
-			fmt.Fprintln(w, `{"error":"could not get frontier of account"}`)
+		// get frontier and start work asynchronously
+		go workcache.GetCachedWorkByAccount(nanoNodeUrl, account)
+		// return response, only account is echoed back, hash and work is not available yet
+		fmt.Fprintln(w, fmt.Sprintf(`{"account":"%v","hash":"<retrieve_in_progress>","source":"started_in_background"}`, account))
+		return
+
+	case "account_balance":
+		// account_balance also triggers work_precompute in the background, and transparently proxies the call for balance
+		var accountBalance accountBalanceJson
+		err := json.Unmarshal(respBody, &accountBalance)
+		if err != nil {
+			fmt.Fprintln(w, `{"error":"account_balance parse error"}`)
 			return
 		}
-		log.Println("Frontier block of account", account, "is", hash)
-		var difficulty uint64 = workcache.GetDefaultDifficulty()
-		// start work asynchronously
-		go workcache.GetCachedWork(nanoNodeUrl, hash, difficulty)
-		// return response, only hash
-		fmt.Fprintln(w, fmt.Sprintf(`{"hash":"%v","source":"started_in_background"}`, hash))
-		return
+		log.Println("account_balance", accountBalance)
+
+		// get frontier and start work asynchronously
+		go workcache.GetCachedWorkByAccount(nanoNodeUrl, accountBalance.Account)
+
+		// proxy the call
+		respJSON, err := rpcclient.MakeGenericCall(nanoNodeUrl, string(respBody))
+		if (err != nil) {
+			log.Println("RPC error:", err.Error())
+			fmt.Fprintln(w, `{"error":"RPC error: ` + err.Error() + `","action":"` + action + `"}`)
+			return
+		}
+		fmt.Fprintln(w, respJSON)
+		break
+		
+	case "accounts_balances":
+		// accounts_balances also triggers work_precompute (for all accounts) in the background, and transparently proxies the call for balances
+		var accountsBalances accountsBalancesJson
+		err := json.Unmarshal(respBody, &accountsBalances)
+		if err != nil {
+			fmt.Fprintln(w, `{"error":"accounts_balances parse error"}`)
+			return
+		}
+		log.Println("accounts_balances", accountsBalances)
+
+		// for all accounts get frontier and start work asynchronously
+		for _, account := range accountsBalances.Accounts {
+			go workcache.GetCachedWorkByAccount(nanoNodeUrl, account)
+		}
+
+		// proxy the call
+		respJSON, err := rpcclient.MakeGenericCall(nanoNodeUrl, string(respBody))
+		if (err != nil) {
+			log.Println("RPC error:", err.Error())
+			fmt.Fprintln(w, `{"error":"RPC error: ` + err.Error() + `","action":"` + action + `"}`)
+			return
+		}
+		fmt.Fprintln(w, respJSON)
+		break
 
 	default:
 		// proxy any other request unmodified

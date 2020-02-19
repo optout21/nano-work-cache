@@ -4,6 +4,7 @@ package workcache
 
 import (
 	//"fmt"
+	"errors"
 	"log"
 	"github.com/catenocrypt/nano-work-cache/rpcclient"
 )
@@ -49,6 +50,7 @@ func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
 func callRpcWork(url string, hash string, diff uint64) (WorkResponse, error) {
 	// mark start in cache
 	addToCacheStart(hash)
+	log.Println("Requesting work from node for hash", hash)
 	// trigger work
 	resp, err := rpcclient.GetWork(url, hash, diff)
 	if (err != nil) {
@@ -64,4 +66,16 @@ func callRpcWork(url string, hash string, diff uint64) (WorkResponse, error) {
 // get default difficulty -- TODO should come from RPC, cached
 func GetDefaultDifficulty() uint64 {
 	return 0xffffffc000000000;
+}
+
+/// First obtain frontier hash of the account, then request work for the hash (if needed), by calling GetCachedWork
+func GetCachedWorkByAccount(url string, account string) (WorkResponse, error) {
+	// get frontier of account
+	hash, err := rpcclient.GetFrontier(url, account)
+	if (err != nil) {
+		return WorkResponse{}, errors.New("Could not obtain frontier block for account " + account + ", " + err.Error())
+	}
+	log.Println("Frontier block of account", account, "is", hash)
+	difficulty := GetDefaultDifficulty()
+	return GetCachedWork(url, hash, difficulty)
 }
