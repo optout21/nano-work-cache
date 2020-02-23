@@ -3,7 +3,9 @@
 package workcache
 
 import (
-	//"fmt"
+	"fmt"
+	"strconv"
+	"strings"
 	"github.com/catenocrypt/nano-work-cache/rpcclient"
 )
 
@@ -15,21 +17,23 @@ type CacheEntry struct {
 	account string
 	// valid, computing
 	status string
-	// time started
-	// time added
+	timeStarted uint64
+	timeAdded uint64
 }
 
 var workCache map[string]CacheEntry = map[string]CacheEntry{}
 
-// Add a work result to the cache
-func addToCache(e rpcclient.WorkResponse) {
+// Add a work result to the cache.  Account is optional (may be empty).
+func addToCache(e rpcclient.WorkResponse, account string) {
 	addToCacheInternal(CacheEntry{
 		e.Hash,
 		e.Work,
 		e.Difficulty,
 		e.Multiplier,
-		"",
+		account,
 		"valid",
+		0,
+		0,
 	})
 }
 
@@ -42,10 +46,15 @@ func addToCacheStart(hash string) {
 		0,
 		"",
 		"computing",
+		0,
+		0,
 	})
 }
+
 func addToCacheInternal(e CacheEntry) {
-	workCache[e.hash] = e
+	if len(e.hash) > 0 {
+		workCache[e.hash] = e
+	}
 }
 
 func getFromCache(hash string) (CacheEntry, bool) {
@@ -79,4 +88,41 @@ func cacheDiffIsOK(e CacheEntry, diff uint64) bool {
 // StatusCacheSize Return the current number of entries in the cache
 func StatusCacheSize() int {
 	return len(workCache)
+}
+
+func padString(val string) string {
+	if len(val) == 0 { return "_" }
+	return val
+}
+
+// Convert an entry to a single-line stirng representation
+func entryToString(entry CacheEntry) string {
+	if len(entry.hash) == 0 { return "" }
+	return fmt.Sprintf("%v %v %v %v %v %v %v %v", padString(entry.hash), padString(entry.work), entry.difficulty, entry.multiplier, 
+		padString(entry.account), padString(entry.status), entry.timeStarted, entry.timeAdded)
+}
+
+// Fill cache entry from a single-line stirng represenation (parse it), see entryToString.
+// Returns true on success. 
+func entryLoadFromString(line string, entry *CacheEntry) bool {
+	tokens := strings.Split(line, " ")
+	if len(tokens) < 2 {
+		// mimium hash and work values are needed; this is too short
+		return false
+	}
+	entry.hash = tokens[0]
+	entry.work = tokens[1]
+	if len(tokens) >= 8 {
+		diff, _ := strconv.ParseUint(tokens[2], 10, 64)
+		entry.difficulty = diff
+		multip, _ := strconv.ParseFloat(tokens[3], 64)
+		entry.multiplier = multip
+		entry.account = tokens[4]
+		entry.status = tokens[5]
+		timeStart, _ := strconv.ParseUint(tokens[6], 10, 64)
+		timeAdded, _ := strconv.ParseUint(tokens[7], 10, 64)
+		entry.timeStarted = timeStart
+		entry.timeAdded = timeAdded
+	}
+	return true
 }

@@ -26,5 +26,7 @@ func main() {
 	}
 	listenIpPort := workcache.ConfigGetString("Main.ListenIpPort")
 
+	workcache.Start()
+
 	restapi.Start(rpcUrl, listenIpPort)
 }

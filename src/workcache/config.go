@@ -16,10 +16,12 @@ func SetConfigFile(configFile string) {
 }
 
 func readConfigIfNeeded() {
-	if (configRead) { return }
+	if (configRead) { return } // already read
 
 	// set defaults
+	viper.SetDefault("Main.NodeRpc", "http://localhost:7076")
 	viper.SetDefault("Main.ListenIpPort", ":7176")
+	viper.SetDefault("Main.CachePeristFileName", "")
 
 	// read config file
 	viper.SetConfigName(configFileName) // name of config file (without extension)

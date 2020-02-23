@@ -1,5 +1,10 @@
 [Main]
 # URL of the remote work generation node
 NodeRpc = "http://path.to.nanonode:port/apipath/"
+
 # Binding address of the service, ":7176" by default
 ListenIpPort = ":7176"
+
+# CacheFile name: if set, this file is used to persist the cache content.
+# Should be full or relative path.  If it is empty, persistence to file is not used.
+CachePeristFileName = ""

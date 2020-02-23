@@ -113,7 +113,7 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 			difficulty = difficultyParsed
 		}
 		// handle
-		workResp, err := workcache.GetCachedWork(nanoNodeUrl, workGenerate.Hash, difficulty)
+		workResp, err := workcache.GetCachedWork(nanoNodeUrl, workGenerate.Hash, difficulty, "")
 		if (err != nil) {
 			fmt.Fprintln(w, `{"error":"` + err.Error() + `"}`)
 			return
@@ -133,7 +133,7 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 		var hash = workPregenerateByHash.Hash
 		var difficulty uint64 = workcache.GetDefaultDifficulty()
 		// start work asynchronously
-		go workcache.GetCachedWork(nanoNodeUrl, hash, difficulty)
+		go workcache.GetCachedWork(nanoNodeUrl, hash, difficulty, "")
 		// return response, only hash
 		fmt.Fprintln(w, fmt.Sprintf(`{"hash":"%v","source":"started_in_background"}`, hash))
 		return

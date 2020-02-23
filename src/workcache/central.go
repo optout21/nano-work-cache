@@ -21,7 +21,14 @@ type WorkResponse struct {
 var statusWorkReqCount int = 0
 var statusWorkRespCount int = 0
 
-func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
+// Start Invoked at the beginning, can perform initializations, read the cache, etc.
+func Start() {
+	LoadCache()
+}
+
+// GetCachedWork Retrieve work for a given hash; either from cache (if exists), or computed afresh from node.
+// Account is optional (may be empty).
+func GetCachedWork(url string, hash string, diff uint64, account string) (WorkResponse, error) {
 	cachedEntry, ok := getFromCache(hash)
 	if (ok) {
 		if cacheIsValid(cachedEntry) {
@@ -45,12 +52,12 @@ func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
 		}
 	}
 	// We need to call into RPC node for work.
-	resp, err := callRpcWork(url, hash, diff)
+	resp, err := callRpcWork(url, hash, diff, account)
 	return resp, err
 }
 
-/// callRpcWork Request work from remote RPC node
-func callRpcWork(url string, hash string, diff uint64) (WorkResponse, error) {
+/// callRpcWork Request work from remote RPC node.  Account is optional (may be empty).
+func callRpcWork(url string, hash string, diff uint64, account string) (WorkResponse, error) {
 	statusWorkReqCount++
 	// mark start in cache
 	addToCacheStart(hash)
@@ -62,8 +69,9 @@ func callRpcWork(url string, hash string, diff uint64) (WorkResponse, error) {
 	}
 	// we have response, add to cache
 	if (len(resp.Hash) == 0) { resp.Hash = hash } // for the case if hash is missing in the response
-	addToCache(resp)
+	addToCache(resp, account)
 	statusWorkRespCount++
+	go SaveCache()
 	log.Println("Work resp from node, added to cache; work_generate resp", resp)
 	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh"}, nil
 }
@@ -82,7 +90,7 @@ func GetCachedWorkByAccount(url string, account string) (WorkResponse, error) {
 	}
 	log.Println("Frontier block of account", account, "is", hash)
 	difficulty := GetDefaultDifficulty()
-	return GetCachedWork(url, hash, difficulty)
+	return GetCachedWork(url, hash, difficulty, account)
 }
 
 
