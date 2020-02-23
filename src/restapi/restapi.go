@@ -201,6 +201,11 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 		fmt.Fprintln(w, respJSON)
 		break
 
+	case "nano-work-cache-status":
+		status := getStatus()
+		fmt.Fprintln(w, status)
+		break
+
 	default:
 		// proxy any other request unmodified
 		log.Println("transaprent proxying of action", action)

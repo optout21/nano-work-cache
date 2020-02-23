@@ -18,6 +18,9 @@ type WorkResponse struct {
 	Source string
 }
 
+var statusWorkReqCount int = 0
+var statusWorkRespCount int = 0
+
 func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
 	cachedEntry, ok := getFromCache(hash)
 	if (ok) {
@@ -46,8 +49,9 @@ func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
 	return resp, err
 }
 
-/// Request work from remote RPC node
+/// callRpcWork Request work from remote RPC node
 func callRpcWork(url string, hash string, diff uint64) (WorkResponse, error) {
+	statusWorkReqCount++
 	// mark start in cache
 	addToCacheStart(hash)
 	log.Println("Requesting work from node for hash", hash)
@@ -59,6 +63,7 @@ func callRpcWork(url string, hash string, diff uint64) (WorkResponse, error) {
 	// we have response, add to cache
 	if (len(resp.Hash) == 0) { resp.Hash = hash } // for the case if hash is missing in the response
 	addToCache(resp)
+	statusWorkRespCount++
 	log.Println("Work resp from node, added to cache; work_generate resp", resp)
 	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh"}, nil
 }
@@ -79,3 +84,10 @@ func GetCachedWorkByAccount(url string, account string) (WorkResponse, error) {
 	difficulty := GetDefaultDifficulty()
 	return GetCachedWork(url, hash, difficulty)
 }
+
+
+// StatusWorkReqCount Return the number of work requests (to node) since start (including currently pending ones)
+func StatusWorkReqCount() int { return statusWorkReqCount }
+
+// StatusWorkRespCount Return the number of work requests responses (from node) since start
+func StatusWorkRespCount() int { return statusWorkRespCount }

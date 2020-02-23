@@ -75,3 +75,8 @@ func cacheDiffIsOK(e CacheEntry, diff uint64) bool {
 	// diff is OK (larger or equal)
 	return true
 }
+
+// StatusCacheSize Return the current number of entries in the cache
+func StatusCacheSize() int {
+	return len(workCache)
+}
