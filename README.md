@@ -106,7 +106,7 @@ Subsequent calls are returned instantly from the cache:
     "work":"bbe869e32c992096",
     "difficulty":"fffffff8ad570225",
     "multiplier":"8.739717559668671",
-    "source":"fromcache"
+    "source":"cache"
 }
 ```
 

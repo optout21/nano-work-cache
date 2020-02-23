@@ -14,7 +14,7 @@ type WorkResponse struct {
 	Work string
 	Difficulty uint64
 	Multiplier float64
-	// values: 'fresh', 'fromcache'
+	// values: 'fresh', 'cache'
 	Source string
 }
 
@@ -32,7 +32,7 @@ func GetCachedWork(url string, hash string, diff uint64) (WorkResponse, error) {
 					cachedEntry.work,
 					cachedEntry.difficulty,
 					cachedEntry.multiplier, 
-					"fromcache",
+					"cache",
 				}, nil
 			} else {
 				// found but diff is smaller, must recompute
