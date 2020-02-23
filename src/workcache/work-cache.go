@@ -1,4 +1,4 @@
-// Copyright © 2019-2019 catenocrypt.  See LICENSE file for license information.
+// Copyright © 2019-2020 catenocrypt.  See LICENSE file for license information.
 
 package workcache
 
