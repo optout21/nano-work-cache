@@ -25,10 +25,11 @@ func LoadCache() {
 
 // saveToFile save cache to the given file
 func saveToFile(filename string) {
-	// first try to rename old file (ignore error if not possible / not exists)
+	// first try to rename old file to .bak (ignore error if not possible / not exists)
 	fileNameBak := filename + ".bak"
 	_ = os.Remove(fileNameBak)
 	_ = os.Rename(filename, fileNameBak)
+	// open new file for writing
 	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		log.Println("Error saving cache to file, could not open file", err.Error())

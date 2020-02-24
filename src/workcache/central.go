@@ -16,6 +16,7 @@ type WorkResponse struct {
 	Multiplier float64
 	// values: 'fresh', 'cache'
 	Source string
+	Error error
 }
 
 var statusWorkReqCount int = 0
@@ -26,38 +27,50 @@ func Start() {
 	LoadCache()
 }
 
+// GetWorkFromCache Try to get work from cache, nil is returned if not found in cache, or not valid
+func GetWorkFromCache(url string, hash string, diff uint64) (bool, WorkResponse) {
+	cachedEntry, ok := getFromCache(hash)
+	if (!ok) { return false, WorkResponse{} }
+	// found in cache
+	if !cacheIsValid(cachedEntry) {
+		// found in cache, but not (yet) valid
+		// TODO we could wait here, to avoid starting again
+		log.Println("WARNING", "Work in progress, yet starting again, hash", hash)
+		return false, WorkResponse{}
+	}
+	if !cacheDiffIsOK(cachedEntry, diff) {
+		// found but diff is smaller, must recompute
+		log.Println("WARNING", "Found in cache, buf diff is smaller, hash", hash, "cdiff", cachedEntry.difficulty, "diff", diff)
+		return false, WorkResponse{}
+	}
+	// found in cache, use it
+	return true, WorkResponse {
+		cachedEntry.hash,
+		cachedEntry.work,
+		cachedEntry.difficulty,
+		cachedEntry.multiplier, 
+		"cache",
+		nil,
+	}
+}
+
 // GetCachedWork Retrieve work for a given hash; either from cache (if exists), or computed afresh from node.
 // Account is optional (may be empty).
 func GetCachedWork(url string, hash string, diff uint64, account string) (WorkResponse, error) {
-	cachedEntry, ok := getFromCache(hash)
-	if (ok) {
-		if cacheIsValid(cachedEntry) {
-			if cacheDiffIsOK(cachedEntry, diff) {
-				// found in cache, use it
-				return WorkResponse {
-					cachedEntry.hash,
-					cachedEntry.work,
-					cachedEntry.difficulty,
-					cachedEntry.multiplier, 
-					"cache",
-				}, nil
-			} else {
-				// found but diff is smaller, must recompute
-				log.Println("WARNING", "Found in cache, buf diff is smaller, hash", hash, "cdiff", cachedEntry.difficulty, "diff", diff)
-			}
-		} else {
-			// found in cache, but not (yet) valid
-			// TODO we could wait here, to avoid starting again
-			log.Println("WARNING", "Work in progress, yet starting again, hash", hash)
-		}
+	// get from cache
+	found, respFromCache := GetWorkFromCache(url, hash, diff)
+	if (found) {
+		// found in cache, use it
+		return respFromCache, nil
 	}
 	// We need to call into RPC node for work.
-	resp, err := callRpcWork(url, hash, diff, account)
-	return resp, err
+	resp := getWorkSync(url, hash, diff, account)
+	return resp, resp.Error
 }
 
-/// callRpcWork Request work from remote RPC node.  Account is optional (may be empty).
-func callRpcWork(url string, hash string, diff uint64, account string) (WorkResponse, error) {
+// getWorkSync Obtain the work now, by calling into the RPC node
+// When result is obtained, it is added to cache.  Account is optional (may be empty).
+func getWorkSync(url string, hash string, diff uint64, account string) WorkResponse {
 	statusWorkReqCount++
 	// mark start in cache
 	addToCacheStart(hash)
@@ -65,7 +78,7 @@ func callRpcWork(url string, hash string, diff uint64, account string) (WorkResp
 	// trigger work
 	resp, err := rpcclient.GetWork(url, hash, diff)
 	if (err != nil) {
-		return WorkResponse{}, err
+		return WorkResponse{Error: err}
 	}
 	// we have response, add to cache
 	if (len(resp.Hash) == 0) { resp.Hash = hash } // for the case if hash is missing in the response
@@ -73,7 +86,7 @@ func callRpcWork(url string, hash string, diff uint64, account string) (WorkResp
 	statusWorkRespCount++
 	go SaveCache()
 	log.Println("Work resp from node, added to cache; work_generate resp", resp)
-	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh"}, nil
+	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh", nil}
 }
 
 // get default difficulty -- TODO should come from RPC, cached
@@ -82,15 +95,16 @@ func GetDefaultDifficulty() uint64 {
 }
 
 /// First obtain frontier hash of the account, then request work for the hash (if needed), by calling GetCachedWork
-func GetCachedWorkByAccount(url string, account string) (WorkResponse, error) {
+func GetCachedWorkByAccount(url string, account string) WorkResponse {
 	// get frontier of account
 	hash, err := rpcclient.GetFrontier(url, account)
 	if (err != nil) {
-		return WorkResponse{}, errors.New("Could not obtain frontier block for account " + account + ", " + err.Error())
+		return WorkResponse{Error: errors.New("Could not obtain frontier block for account " + account + ", " + err.Error())}
 	}
 	log.Println("Frontier block of account", account, "is", hash)
 	difficulty := GetDefaultDifficulty()
-	return GetCachedWork(url, hash, difficulty, account)
+	resp, _ := GetCachedWork(url, hash, difficulty, account)
+	return resp
 }
 
 
