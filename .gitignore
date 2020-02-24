@@ -7,7 +7,7 @@
 src/main/main
 src/main/config.toml
 src/sample/sample
-test/stresstest/stresstest
+src/test/stresstest/stresstest
 
 # Test binary, built with `go test -c`
 *.test
