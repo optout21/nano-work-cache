@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
     "log"
 	"net/http"
-	"github.com/catenocrypt/nano-work-cache/workcache"
 )
 
 type actionJson struct {
@@ -39,7 +38,7 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 				fmt.Fprintln(w, `{"error":"action parse error"}`)
 			} else {
 				log.Println("action", action)
-				handleJson(action.Action, body, w)
+				handleReqWithRateLimit(action.Action, body, w)
 			}
 		}
 
@@ -50,7 +49,8 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 
 var nanoNodeUrl string
 
-func Start(nanoNodeUrl1 string, listenIpPort string) {
+func Start(nanoNodeUrl1 string, listenIpPort string, maxActiveHandlerCountIn int) {
+	maxActiveHandlerCount = maxActiveHandlerCountIn
 	nanoNodeUrl = nanoNodeUrl1
     http.HandleFunc("/", handleRequest)
 

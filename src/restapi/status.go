@@ -12,6 +12,7 @@ func getStatus() string {
 	cacheSize := workcache.StatusCacheSize()
 	workReqCount := workcache.StatusWorkReqCount()
 	workRespCount := workcache.StatusWorkRespCount()
-	return fmt.Sprintf("{\"cache_size\": %v, \"work_req_count\": %v, \"work_resp_count\": %v}",
-		cacheSize, workReqCount, workRespCount)
+	concurrentHandlerCount := ActiveHandlerCount()
+	return fmt.Sprintf(`{"cache_size": %v, "work_req_count": %v, "work_resp_count": %v, "concurrent_handler_count": %v}`,
+		cacheSize, workReqCount, workRespCount, concurrentHandlerCount)
 }

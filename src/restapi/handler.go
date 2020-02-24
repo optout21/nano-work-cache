@@ -44,7 +44,7 @@ func workResponseToJson(resp workcache.WorkResponse) string {
 		resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, resp.Source)
 }
 
-func handleJson(action string, respBody []byte, w http.ResponseWriter) {
+func handleReqSync(action string, respBody []byte, w http.ResponseWriter) {
 	switch action {
 	case "work_generate":
 		var workGenerate workGenerateJson
@@ -153,7 +153,7 @@ func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 		fmt.Fprintln(w, respJSON)
 		break
 
-	case "nano-work-cache-status":
+	case "nano-work-cache-status-internal":
 		status := getStatus()
 		fmt.Fprintln(w, status)
 		break

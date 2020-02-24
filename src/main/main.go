@@ -3,9 +3,11 @@
 package main
 
 import (
+	"fmt"
+	"math"
+	"os"
 	"github.com/catenocrypt/nano-work-cache/restapi"
 	"github.com/catenocrypt/nano-work-cache/workcache"
-	"os"
 )
 
 func check(err error) {
@@ -24,9 +26,14 @@ func main() {
 	if (len(rpcUrl) == 0) {
 		panic("No value configured for Main.NodeRpc")
 	}
+	fmt.Printf("Config: NodeRpc  %v \n", rpcUrl)
 	listenIpPort := workcache.ConfigGetString("Main.ListenIpPort")
-
+	fmt.Printf("Config: ListenIpPort  %v \n", listenIpPort)
+	restMaxConcRequests := workcache.ConfigGetIntWithDefault("Main.RestMaxConcRequests", 200)
+	restMaxConcRequests = int(math.Max(float64(restMaxConcRequests), float64(20)))
+	fmt.Printf("Config: RestMaxConcRequests  %v \n", restMaxConcRequests)
+	
 	workcache.Start()
 
-	restapi.Start(rpcUrl, listenIpPort)
+	restapi.Start(rpcUrl, listenIpPort, restMaxConcRequests)
 }

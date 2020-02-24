@@ -5,6 +5,7 @@ package workcache
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"github.com/spf13/viper"
 )
 
@@ -19,9 +20,10 @@ func readConfigIfNeeded() {
 	if (configRead) { return } // already read
 
 	// set defaults
-	viper.SetDefault("Main.NodeRpc", "http://localhost:7076")
+	// no default for "Main.NodeRpc", must be set
 	viper.SetDefault("Main.ListenIpPort", ":7176")
 	viper.SetDefault("Main.CachePeristFileName", "")
+	viper.SetDefault("Main.RestMaxConcRequests", 200)
 
 	// read config file
 	viper.SetConfigName(configFileName) // name of config file (without extension)
@@ -38,4 +40,14 @@ func readConfigIfNeeded() {
 func ConfigGetString(keyName string) string {
 	readConfigIfNeeded()
 	return viper.GetString(keyName)
+}
+
+func ConfigGetIntWithDefault(keyName string, defaultVal int) int {
+	str := ConfigGetString(keyName)
+	val, err := strconv.ParseInt(str, 10, 32)
+	if err != nil {
+		log.Println("Invalid int config value", str)
+		return defaultVal
+	}
+	return int(val)
 }

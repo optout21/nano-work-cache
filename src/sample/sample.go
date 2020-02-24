@@ -47,23 +47,25 @@ func main() {
 	
 	//rpcCallPrint(url, `{"action": "work_generate","hash": "718CC2121C3E641059BC1C2CFC45666C99E8AE922F7A807B7D07B62C995D79E2","difficulty": "ffffffd21c3933f3"}`)
 	//var diff1 uint64 = 0xffffffc800000000
-	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"work_generate\",\"hash\": \"%v\"}", hash1))
+	rpcCallPrint(url, fmt.Sprintf(`{"action": "work_generate","hash": "%v"}`, hash1))
 	
-	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"work_generate\",\"hash\": \"%v\"}", hash1))
+	rpcCallPrint(url, fmt.Sprintf(`{"action": "work_generate","hash": "%v"}`, hash1))
 
-	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"work_pregenerate_by_hash\",\"hash\": \"%v\"}", hash1))
+	rpcCallPrint(url, fmt.Sprintf(`{"action": "work_pregenerate_by_hash","hash": "%v"}`, hash1))
 
-	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"work_pregenerate_by_account\",\"account\": \"%v\"}", account1))
+	rpcCallPrint(url, fmt.Sprintf(`{"action": "work_pregenerate_by_account","account": "%v"}`, account1))
 
-	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"account_balance\",\"account\": \"%v\"}", account1))
+	rpcCallPrint(url, fmt.Sprintf(`{"action": "account_balance","account": "%v"}`, account1))
 
-	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"accounts_balances\",\"accounts\": [\"%v\"]}", account1))
+	rpcCallPrint(url, fmt.Sprintf(`{"action": "accounts_balances","accounts": ["%v"]}`, account1))
+
+	rpcCallPrint(url, fmt.Sprintf(`{"action": "nano-work-cache-status-internal"}`))
 
 	// try with higher difficulties
 	var diff uint64 = 0xffffffc000000000
 	for negDiff(diff) > 0x800000000 {
 		fmt.Printf("diff %x %x\n", diff, negDiff(diff))
-		rpcCallPrint(url, fmt.Sprintf("{\"action\": \"work_generate\",\"hash\": \"%v\", \"difficulty\": \"%x\"}", hash1, diff))
+		rpcCallPrint(url, fmt.Sprintf(`{"action": "work_generate","hash": "%v", "difficulty": "%x"}`, hash1, diff))
 		diff = incDiff(diff)
 	}
 }

@@ -8,3 +8,7 @@ ListenIpPort = ":7176"
 # CacheFile name: if set, this file is used to persist the cache content.
 # Should be full or relative path.  If it is empty, persistence to file is not used.
 CachePeristFileName = ""
+
+# HTTP API Rate limit: max concurrent outstanding requests.  If reached, overload error messages are returned.
+# Background-running work requests are counted in here, they are limited differently
+RestMaxConcRequests = 500
