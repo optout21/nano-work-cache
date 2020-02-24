@@ -98,7 +98,7 @@ func padString(val string) string {
 // Convert an entry to a single-line stirng representation
 func entryToString(entry CacheEntry) string {
 	if len(entry.hash) == 0 { return "" }
-	return fmt.Sprintf("%v %v %v %v %v %v %v %v", padString(entry.hash), padString(entry.work), entry.difficulty, entry.multiplier, 
+	return fmt.Sprintf("%v %v %x %v %v %v %v %v", padString(entry.hash), padString(entry.work), entry.difficulty, entry.multiplier, 
 		padString(entry.account), padString(entry.status), entry.timeStarted, entry.timeAdded)
 }
 

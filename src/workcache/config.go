@@ -23,7 +23,9 @@ func readConfigIfNeeded() {
 	// no default for "Main.NodeRpc", must be set
 	viper.SetDefault("Main.ListenIpPort", ":7176")
 	viper.SetDefault("Main.CachePeristFileName", "")
-	viper.SetDefault("Main.RestMaxConcRequests", 200)
+	viper.SetDefault("Main.RestMaxActiveRequests", 200)
+	viper.SetDefault("Main.BackgroundWorkerCount", 4)
+	viper.SetDefault("Main.MaxOutRequests", 8)
 
 	// read config file
 	viper.SetConfigName(configFileName) // name of config file (without extension)
