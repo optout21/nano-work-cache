@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/catenocrypt/nano-work-cache/workcache"
 	"github.com/catenocrypt/nano-work-cache/rpcclient"
 )
 
@@ -34,7 +33,7 @@ func rpcCallPrint(url string, reqJson string) {
 }
 
 func main() {
-	var url = "http://localhost:7176"
+	var url = "http://localhost:7376"
 	//var url = "https://nanovault.io/api/node-api"
 	
 	rpcCallPrint(url, `{"action":"block_count"}`)
@@ -48,46 +47,14 @@ func main() {
 	
 	//rpcCallPrint(url, `{"action": "work_generate","hash": "718CC2121C3E641059BC1C2CFC45666C99E8AE922F7A807B7D07B62C995D79E2","difficulty": "ffffffd21c3933f3"}`)
 	//var diff1 uint64 = 0xffffffc800000000
-	resp, err := workcache.GetCachedWork(url, hash1, 0)
-	if (err != nil) {
-		fmt.Println("Error:", err)
-		return
-	}
-	fmt.Println("Work res", resp)
+	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"work_generate\",\"hash\": \"%v\"}", hash1))
 	
-	resp, err = workcache.GetCachedWork(url, hash1, 0)
-	if (err != nil) {
-		fmt.Println("Error:", err)
-		return
-	}
-	fmt.Println("Work res 2", resp)
+	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"work_generate\",\"hash\": \"%v\"}", hash1))
 
 	var diff uint64 = 0xffffffc000000000
 	for negDiff(diff) > 0x800000000 {
 		fmt.Printf("diff %x %x\n", diff, negDiff(diff))
-		resp, err = workcache.GetCachedWork(url, hash1, diff)
-		if (err != nil) {
-			fmt.Println("Error:", err)
-			return
-		}
-		fmt.Printf("Work res, diff %x %x, resp %v \n", diff, negDiff(diff), resp)
+		rpcCallPrint(url, fmt.Sprintf("{\"action\": \"work_generate\",\"hash\": \"%v\", \"difficulty\": \"%x\"}", hash1, diff))
 		diff = incDiff(diff)
 	}
-	
-	/*
-	var reqJson = []byte(`{"action": "work_generate","hash": "718CC2121C3E641059BC1C2CFC45666C99E8AE922F7A807B7D07B62C995D79E2","difficulty": "ffffffd21c3933f3"}`)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqJson))
-	check(err)
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	check(err)
-	defer resp.Body.Close()
-
-    fmt.Println("response Status:", resp.Status)
-    fmt.Println("response Headers:", resp.Header)
-    body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
-	*/
 }
