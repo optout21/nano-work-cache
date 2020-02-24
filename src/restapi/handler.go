@@ -12,6 +12,38 @@ import (
 	"github.com/catenocrypt/nano-work-cache/rpcclient"
 )
 
+type workGenerateJson struct {
+	Action string
+	Hash string
+	Difficulty string
+}
+
+type workPregenerateByHashJson struct {
+	Action string
+	Hash string
+}
+
+type workPregenerateByAccountJson struct {
+	Action string
+	Account string
+}
+
+type accountBalanceJson struct {
+	Action string
+	Account string
+}
+
+type accountsBalancesJson struct {
+	Action string
+	Accounts []string
+}
+
+/// Not the normal Json Encode way, due to the difficult hex formatting.  Using simple string concatenation.
+func workResponseToJson(resp workcache.WorkResponse) string {
+	return fmt.Sprintf(`{"hash":"%v","work":"%v","difficulty":"%x","multiplier":"%v","source":"%v"}`,
+		resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, resp.Source)
+}
+
 func handleJson(action string, respBody []byte, w http.ResponseWriter) {
 	switch action {
 	case "work_generate":

@@ -25,6 +25,7 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	case "GET":     
 		fmt.Fprintf(w, "Welcome to my website!")
 		//http.ServeFile(w, r, "form.html")
+
 	case "POST":
 		body, err := ioutil.ReadAll(req.Body)
 		if err != nil {
@@ -41,53 +42,10 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 				handleJson(action.Action, body, w)
 			}
 		}
-		/*
-        // Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
-        if err := r.ParseForm(); err != nil {
-            fmt.Fprintf(w, "ParseForm() err: %v", err)
-            return
-        }
-        fmt.Fprintf(w, "Post from website! r.PostFrom = %v\n", r.PostForm)
-        name := r.FormValue("name")
-        address := r.FormValue("address")
-        fmt.Fprintf(w, "Name = %s\n", name)
-		fmt.Fprintf(w, "Address = %s\n", address)
-		*/
+
     default:
         fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
     }
-}
-
-type workGenerateJson struct {
-	Action string
-	Hash string
-	Difficulty string
-}
-
-type workPregenerateByHashJson struct {
-	Action string
-	Hash string
-}
-
-type workPregenerateByAccountJson struct {
-	Action string
-	Account string
-}
-
-type accountBalanceJson struct {
-	Action string
-	Account string
-}
-
-type accountsBalancesJson struct {
-	Action string
-	Accounts []string
-}
-
-/// Not the normal Json Encode way, due to the difficult hex formatting.  Using simple string concatenation.
-func workResponseToJson(resp workcache.WorkResponse) string {
-	return fmt.Sprintf(`{"hash":"%v","work":"%v","difficulty":"%x","multiplier":"%v","source":"%v"}`,
-		resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, resp.Source)
 }
 
 var nanoNodeUrl string
