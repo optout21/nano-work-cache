@@ -164,9 +164,6 @@ curl -d '{"action":"account_balance","account":"nano_3rpb7ddcd6kux978gkwxh1i1s6c
 ## Not (yet) done
 
 - Periodically retrieve current difficulty from node
-- If work is requested while already running, wait for the result instead of triggering again
-- Save cache to external storage (file), to survive process restart
-- Run async work requests in worker threads, with limited number and a request queue
 - Aging of cache entries (e.g. after 7 days)
 - Periodical persist save (if changed)
 - Support nano work peers
