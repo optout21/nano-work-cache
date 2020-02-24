@@ -35,7 +35,6 @@ func rpcCallPrint(url string, reqJson string) {
 
 func main() {
 	var url = "http://localhost:7176"
-	//var url = "http://54.227.21.124:7176"
 	//var url = "https://nanovault.io/api/node-api"
 	
 	rpcCallPrint(url, `{"action":"block_count"}`)
