@@ -51,6 +51,15 @@ func main() {
 	
 	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"work_generate\",\"hash\": \"%v\"}", hash1))
 
+	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"work_pregenerate_by_hash\",\"hash\": \"%v\"}", hash1))
+
+	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"work_pregenerate_by_account\",\"account\": \"%v\"}", account1))
+
+	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"account_balance\",\"account\": \"%v\"}", account1))
+
+	rpcCallPrint(url, fmt.Sprintf("{\"action\": \"accounts_balances\",\"accounts\": [\"%v\"]}", account1))
+
+	// try with higher difficulties
 	var diff uint64 = 0xffffffc000000000
 	for negDiff(diff) > 0x800000000 {
 		fmt.Printf("diff %x %x\n", diff, negDiff(diff))
