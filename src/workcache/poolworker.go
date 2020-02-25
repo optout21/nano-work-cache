@@ -30,7 +30,7 @@ func doProcess(name int) {
 		select {
 		case preJob := <- pregenerateJobs:
 			//log.Printf("Worker %v : pregenerate job", name)
-			getCachedWork(preJob)
+			getCachedWorkByAccountOrHash(preJob)
 
 		case <-ticker.C:
 			// timeout, idle loop

@@ -10,14 +10,14 @@ import (
 	"github.com/catenocrypt/nano-work-cache/rpcclient"
 )
 
-//const (
-//	WorkInputHash = 0
-//	WorkInputAccount = 1
-//)
+const (
+	WorkInputHash = 0
+	WorkInputAccount = 1
+)
 
 type WorkRequest struct {
 	Url string
-	//Input int // WorkInputHash or Account
+	Input int // WorkInputHash or Account
 	Hash string
 	Diff uint64
 	Account string
@@ -48,7 +48,7 @@ func Start(backgroundWorkerCount int, maxOutRequestsIn int) {
 // Account is optional, may by empty. 
 // Difficulty may be 0, default will be used
 func Generate(url string, hash string, difficulty uint64, account string) (WorkResponse, error) {
-	req := WorkRequest{url, hash, difficulty, account}
+	req := WorkRequest{url, WorkInputHash, hash, difficulty, account}
 	resp := getCachedWork(req)
 	return resp, resp.Error
 }
@@ -57,13 +57,13 @@ func Generate(url string, hash string, difficulty uint64, account string) (WorkR
 // Account is optional, may by empty. 
 // Default difficulty will be used
 func PregenerateByHash(url string, hash string, account string) {
-	addPregenerateRequest(WorkRequest{url, hash, 0, account})
+	addPregenerateRequest(WorkRequest{url, WorkInputHash, hash, 0, account})
 }
 
 // PregenerateByAccount Enqueue a pregeneration request, by account
 // Default difficulty will be used
 func PregenerateByAccount(url string, account string) {
-	addPregenerateRequest(WorkRequest{url, "", 0, account})
+	addPregenerateRequest(WorkRequest{url, WorkInputAccount, "", 0, account})
 }
 
 func waitForCacheResult(req WorkRequest) (WorkResponse, error) {
@@ -133,6 +133,17 @@ func getCachedWork(req WorkRequest) WorkResponse {
 	return resp
 }
 
+// If input is account, get frontier first
+func getCachedWorkByAccountOrHash(req WorkRequest) WorkResponse {
+	if req.Input == WorkInputAccount {
+		hash, err := GetFrontierHash(req.Url, req.Account)
+		if err != nil { return WorkResponse{Error: err} }
+		req.Hash = hash
+	}
+	resp := getCachedWork(req)
+	return resp
+}
+
 var activeWorkOutReqCount int = 0
 func decActiveWorkOutReqCount() { activeWorkOutReqCount-- }
 
@@ -152,7 +163,7 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	addToCacheStart(req.Hash)
 	log.Printf("Requesting work from node, reqCount %v  hash %v ", activeWorkOutReqCount, req.Hash)
 	// trigger work
-	resp, err := rpcclient.GetWork(req.Url, req.Hash, req.Diff)
+	resp, err, duration := rpcclient.GetWork(req.Url, req.Hash, req.Diff)
 	if (err != nil) {
 		return WorkResponse{Error: err}
 	}
@@ -162,7 +173,7 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	addToCache(resp, req.Account)
 	statusWorkRespCount++
 	go SaveCache()
-	log.Println("Work resp from node, added to cache; work_generate resp", resp)
+	log.Printf("Work resp from node, added to cache; dur %v, req %v, resp %v, ", duration, req, resp)
 	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh", nil}
 }
 
