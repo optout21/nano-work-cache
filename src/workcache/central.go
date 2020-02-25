@@ -163,6 +163,7 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	addToCacheStart(req.Hash)
 	log.Printf("Requesting work from node, reqCount %v  hash %v \n", activeWorkOutReqCount, req.Hash)
 	// trigger work
+	timeComputed := time.Now().Unix()
 	resp, err, duration := rpcclient.GetWork(req.Url, req.Hash, req.Diff)
 	if (err != nil) {
 		return WorkResponse{Error: err}
@@ -170,7 +171,7 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	
 	// we have response, add to cache
 	if (len(resp.Hash) == 0) { resp.Hash = req.Hash } // for the case if hash is missing in the response
-	addToCache(resp, req.Account)
+	addToCache(resp, req.Account, timeComputed)
 	statusWorkRespCount++
 	go SaveCache()
 	log.Printf("Work resp from node, added to cache; dur %v, req %v, resp %v, \n", duration, req, resp)

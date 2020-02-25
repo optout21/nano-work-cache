@@ -65,6 +65,8 @@ func loadFromFile(filename string) {
 		var entry CacheEntry
 		lineParsed := entryLoadFromString(line, &entry)
 		if !lineParsed { continue; }
+		// omit non-"valid" entries
+		if entry.status != "valid" { continue; }
 		addToCacheInternal(entry)
 		cnt++
 	}

@@ -3,10 +3,11 @@
 package workcache
 
 import (
+	"github.com/catenocrypt/nano-work-cache/rpcclient"
 	"fmt"
 	"strconv"
 	"strings"
-	"github.com/catenocrypt/nano-work-cache/rpcclient"
+	"time"
 )
 
 type CacheEntry struct {
@@ -17,14 +18,14 @@ type CacheEntry struct {
 	account string
 	// valid, computing
 	status string
-	timeStarted uint64
-	timeAdded uint64
+	timeComputed int64 // unix time
+	timeAdded int64
 }
 
 var workCache map[string]CacheEntry = map[string]CacheEntry{}
 
 // Add a work result to the cache.  Account is optional (may be empty).
-func addToCache(e rpcclient.WorkResponse, account string) {
+func addToCache(e rpcclient.WorkResponse, account string, timeComputed int64) {
 	addToCacheInternal(CacheEntry{
 		e.Hash,
 		e.Work,
@@ -32,8 +33,8 @@ func addToCache(e rpcclient.WorkResponse, account string) {
 		e.Multiplier,
 		account,
 		"valid",
-		0,
-		0,
+		timeComputed,
+		time.Now().Unix(),
 	})
 }
 
@@ -47,7 +48,7 @@ func addToCacheStart(hash string) {
 		"",
 		"computing",
 		0,
-		0,
+		time.Now().Unix(),
 	})
 }
 
@@ -98,7 +99,7 @@ func padString(val string) string {
 func entryToString(entry CacheEntry) string {
 	if len(entry.hash) == 0 { return "" }
 	return fmt.Sprintf("%v %v %x %v %v %v %v %v", padString(entry.hash), padString(entry.work), entry.difficulty, entry.multiplier, 
-		padString(entry.account), padString(entry.status), entry.timeStarted, entry.timeAdded)
+		padString(entry.account), padString(entry.status), entry.timeComputed, entry.timeAdded)
 }
 
 // Fill cache entry from a single-line stirng represenation (parse it), see entryToString.
@@ -118,9 +119,9 @@ func entryLoadFromString(line string, entry *CacheEntry) bool {
 		entry.multiplier = multip
 		entry.account = tokens[4]
 		entry.status = tokens[5]
-		timeStart, _ := strconv.ParseUint(tokens[6], 10, 64)
-		timeAdded, _ := strconv.ParseUint(tokens[7], 10, 64)
-		entry.timeStarted = timeStart
+		timeComputed, _ := strconv.ParseInt(tokens[6], 10, 64)
+		timeAdded, _ := strconv.ParseInt(tokens[7], 10, 64)
+		entry.timeComputed = timeComputed
 		entry.timeAdded = timeAdded
 	}
 	return true
