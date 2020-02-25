@@ -161,7 +161,7 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 
 	// mark start in cache
 	addToCacheStart(req.Hash)
-	log.Printf("Requesting work from node, reqCount %v  hash %v ", activeWorkOutReqCount, req.Hash)
+	log.Printf("Requesting work from node, reqCount %v  hash %v \n", activeWorkOutReqCount, req.Hash)
 	// trigger work
 	resp, err, duration := rpcclient.GetWork(req.Url, req.Hash, req.Diff)
 	if (err != nil) {
@@ -173,7 +173,7 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	addToCache(resp, req.Account)
 	statusWorkRespCount++
 	go SaveCache()
-	log.Printf("Work resp from node, added to cache; dur %v, req %v, resp %v, ", duration, req, resp)
+	log.Printf("Work resp from node, added to cache; dur %v, req %v, resp %v, \n", duration, req, resp)
 	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh", nil}
 }
 

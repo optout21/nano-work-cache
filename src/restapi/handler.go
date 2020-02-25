@@ -68,7 +68,7 @@ func handleReqSync(action string, respBody []byte, w http.ResponseWriter) {
 		workResp, err := workcache.Generate(nanoNodeUrl, workGenerate.Hash, difficulty, "")
 		log.Println("work_generate resp", workResp)
 		if err != nil {
-			fmt.Fprintf(w, `{"error": "%v"`, err.Error())
+			fmt.Fprintf(w, `{"error": "%v"}`, err.Error())
 			return
 		}
 		fmt.Fprintln(w, workResponseToJson(workResp))

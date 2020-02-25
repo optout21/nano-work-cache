@@ -9,7 +9,8 @@ import (
 )
 
 // Background generate jobs, with low priority.  Size is large, fixed.
-var pregenerateJobs chan WorkRequest = make(chan WorkRequest, 10000)
+var pregenerateJobsMaxSize int = 10000
+var pregenerateJobs chan WorkRequest = make(chan WorkRequest, pregenerateJobsMaxSize)
 
 func addPregenerateRequest(req WorkRequest) {
 	// check in cache
@@ -17,6 +18,10 @@ func addPregenerateRequest(req WorkRequest) {
 	if (found) {
 		// found in cache, no need to compute
 		return
+	}
+	if len(pregenerateJobs) >= pregenerateJobsMaxSize - 2 {
+		// queue is full, do not put any more (to avoid blocking)
+		log.Printf("WARNING: Pregeneration queue is full, not enqueuing any more, %v\n", len(pregenerateJobs))
 	}
 	pregenerateJobs <- req
 }

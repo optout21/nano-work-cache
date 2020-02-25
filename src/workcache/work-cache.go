@@ -76,7 +76,6 @@ func cacheIsValid(e CacheEntry) bool {
 
 // Note: difficulty may be missing (0)
 func cacheDiffIsOK(e CacheEntry, diff uint64) bool {
-	//fmt.Printf("diff %x %x\n", e.difficulty, diff)
 	if (diff != 0 && e.difficulty != 0 && e.difficulty < diff) {
 		// but diff is smaller
 		return false
