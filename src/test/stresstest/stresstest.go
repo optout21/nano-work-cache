@@ -11,7 +11,7 @@ import (
 
 var url string = "http://localhost:7376"
 var testDataHashCount int = 300
-var delayBetweenCommandsMs time.Duration = 300
+var delayBetweenCommandsMs time.Duration = 250
 
 func check(err error) {
 	if err != nil {
@@ -35,23 +35,49 @@ func rpcCallPrint(url string, reqJson string, printResult bool) {
 }
 
 func runWorkGenerate() {
-	hash := randomHash()
+	hash := getRandomHash()
 	go rpcCallPrint(url, fmt.Sprintf(`{"action": "work_generate","hash": "%v"}`, hash), true)
 }
 
 func runPregenerateByHash() {
-	hash := randomHash()
+	hash := getRandomHash()
 	rpcCallPrint(url, fmt.Sprintf(`{"action": "work_pregenerate_by_hash","hash": "%v"}`, hash), false)
+}
+
+func runAccountBalance() {
+	account := getValidAccount()
+	go rpcCallPrint(url, fmt.Sprintf(`{"action": "account_balance","account": "%v"}`, account), true)
+}
+
+func runAccountsBalances() {
+	account := getValidAccount()
+	go rpcCallPrint(url, fmt.Sprintf(`{"action": "accounts_balances","accounts": ["%v"]}`, account), true)
 }
 
 func runCommand() {
 	var commandTypeRandom int = rand.Intn(100)
+
 	// 10% work_generate
 	commandTypeRandom -= 10
 	if commandTypeRandom <= 0 {
 		runWorkGenerate()
 		return
 	}
+
+	// 3% accounts_balances
+	commandTypeRandom -= 3
+	if commandTypeRandom <= 0 {
+		runAccountsBalances()
+		return
+	}
+
+	// 3% account_balance
+	commandTypeRandom -= 3
+	if commandTypeRandom <= 0 {
+		runAccountBalance()
+		return
+	}
+	
 	// rest: work_pregenerate_by_hash
 	runPregenerateByHash()
 }
