@@ -3,14 +3,15 @@
 package rpcclient
 
 import (
-	"errors"
-	//"fmt"
-	"net/http"
 	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 	"strings"
-	"encoding/json"
-	"io/ioutil"
+	"time"
 )
 
 func RpcCall(url string, reqJson string) (respJson string, err error) {
@@ -47,26 +48,24 @@ type WorkResponseJson struct {
 }
 
 // work_generate.  Difficulty may be missing (0)
-func GetWork(url string, hash string, diff uint64) (WorkResponse, error) {
-	reqJson := `{"action":"work_generate","hash":"` + hash + `"`
+func GetWork(url string, hash string, diff uint64) (WorkResponse, error, time.Duration) {
+	timeStart := time.Now()
+	reqJson := fmt.Sprintf(`{"action":"work_generate","hash":"%v"`, hash)
 	if (diff != 0) {
-		reqJson += `,"difficulty":"` + strconv.FormatUint(diff, 16) + `"`
+		reqJson += fmt.Sprintf(`,"difficulty":"%x"`, diff)
 	}
 	reqJson += `}`
-	//fmt.Println(reqJson)
 	respString, err := RpcCall(url, reqJson)
 	var resp WorkResponse
 	if (err != nil) {
-		return resp, err
+		return resp, err, 0
 	}
 	// parse json
-	//fmt.Println(respString)
 	var respStruct1 WorkResponseJson
 	err = json.Unmarshal([]byte(respString), &respStruct1)
 	if (err != nil) {
-		return resp, err
+		return resp, err, 0
 	}
-	//fmt.Println(respStruct1)
 	difficulty, err := strconv.ParseUint(respStruct1.Difficulty, 16, 64)
 	if (err != nil) {
 		// diff not present, take input (in reality actual difficulty is usually higher)
@@ -77,8 +76,9 @@ func GetWork(url string, hash string, diff uint64) (WorkResponse, error) {
 		// could not read multiplier
 		multiplier = 1.0
 	}
+	timeStop := time.Now()
 	resp = WorkResponse{respStruct1.Hash, respStruct1.Work, difficulty, multiplier}
-	return resp, nil
+	return resp, nil, timeStop.Sub(timeStart)
 }
 
 type AccountFrontiersRespJson struct {
