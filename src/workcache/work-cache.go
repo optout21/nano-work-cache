@@ -113,7 +113,7 @@ func entryLoadFromString(line string, entry *CacheEntry) bool {
 	entry.hash = tokens[0]
 	entry.work = tokens[1]
 	if len(tokens) >= 8 {
-		diff, _ := strconv.ParseUint(tokens[2], 10, 64)
+		diff, _ := strconv.ParseUint(tokens[2], 16, 64)
 		entry.difficulty = diff
 		multip, _ := strconv.ParseFloat(tokens[3], 64)
 		entry.multiplier = multip
