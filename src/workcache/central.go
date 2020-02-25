@@ -42,6 +42,7 @@ func Start(backgroundWorkerCount int, maxOutRequestsIn int) {
 	LoadCache()
 	maxOutRequests = maxOutRequestsIn
 	startWorkers(backgroundWorkerCount)
+	go housekeepingCycle()
 }
 
 // Generate Generate work, in foreground, but for rate limiting and priority handling it goes to a pool worker.
@@ -173,7 +174,6 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	if (len(resp.Hash) == 0) { resp.Hash = req.Hash } // for the case if hash is missing in the response
 	addToCache(resp, req.Account, timeComputed)
 	statusWorkRespCount++
-	go SaveCache()
 	log.Printf("Work resp from node, added to cache; dur %v, req %v, resp %v, \n", duration, req, resp)
 	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh", nil}
 }

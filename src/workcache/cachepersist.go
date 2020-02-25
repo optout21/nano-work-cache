@@ -9,18 +9,27 @@ import (
 	"os"
 )
 
+func isPersistToFileEnabled() bool {
+	filename := ConfigGetString("Main.CachePeristFileName")
+	if len(filename) == 0 { return false }
+	return true
+}
+
+func persistFileName() string {
+	filename := ConfigGetString("Main.CachePeristFileName")
+	return filename
+}
+
 // SaveCache Save the cache to file or orther persistence configured
 func SaveCache() {
-	filename := ConfigGetString("Main.CachePeristFileName")
-	if len(filename) == 0 { return }
-	saveToFile(filename)
+	if !isPersistToFileEnabled() { return }
+	saveToFile(persistFileName())
 }
 
 // LoadCache Load the cache from file or orther persistence configured
 func LoadCache() {
-	filename := ConfigGetString("Main.CachePeristFileName")
-	if len(filename) == 0 { return }
-	loadFromFile(filename)
+	if !isPersistToFileEnabled() { return }
+	loadFromFile(persistFileName())
 }
 
 // saveToFile save cache to the given file

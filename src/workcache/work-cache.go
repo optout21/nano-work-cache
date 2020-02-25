@@ -22,7 +22,12 @@ type CacheEntry struct {
 	timeAdded int64
 }
 
+// The cache, key is hash
 var workCache map[string]CacheEntry = map[string]CacheEntry{}
+// Time of last addition to cache
+var cacheUpdateTime int64 = 0
+
+func CacheUpdateTime() int64 { return cacheUpdateTime }
 
 // Add a work result to the cache.  Account is optional (may be empty).
 func addToCache(e rpcclient.WorkResponse, account string, timeComputed int64) {
@@ -34,7 +39,7 @@ func addToCache(e rpcclient.WorkResponse, account string, timeComputed int64) {
 		account,
 		"valid",
 		timeComputed,
-		time.Now().Unix(),
+		0,
 	})
 }
 
@@ -48,14 +53,19 @@ func addToCacheStart(hash string) {
 		"",
 		"computing",
 		0,
-		time.Now().Unix(),
+		0,
 	})
 }
 
 func addToCacheInternal(e CacheEntry) {
-	if len(e.hash) > 0 {
-		workCache[e.hash] = e
+	if len(e.hash) == 0 {
+		// empty key, omit
+		return
 	}
+	now := time.Now().Unix()
+	e.timeAdded = now
+	workCache[e.hash] = e
+	cacheUpdateTime = now
 }
 
 func getFromCache(hash string) (CacheEntry, bool) {
