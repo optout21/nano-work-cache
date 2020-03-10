@@ -37,7 +37,7 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 			if err != nil {
 				fmt.Fprintln(w, `{"error":"action parse error"}`)
 			} else {
-				log.Println("action", action)
+				//log.Println("action", action)
 				handleReqWithRateLimit(action.Action, body, w)
 			}
 		}

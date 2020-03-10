@@ -194,7 +194,7 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 		err := json.Unmarshal(reqBody, &requestWithBlock)
 		if err == nil {
 			account = requestWithBlock.Block.Account
-			//log.Println("Extracted account from request action", action, "account", account)
+			log.Println("Extracted account from request action", action, "account", account)
 		}
 		
 		respJSON, err := proxyCall(nanoNodeUrl, action, string(reqBody))
