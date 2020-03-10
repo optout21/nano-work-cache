@@ -34,8 +34,10 @@ type WorkResponse struct {
 }
 
 var maxOutRequests int = 8;
-var statusWorkReqCount int = 0
-var statusWorkRespCount int = 0
+var statusWorkOutReqCount int = 0
+var statusWorkOutRespCount int = 0
+var statusWorkInReqCount int = 0
+var statusWorkInReqFromCache int = 0
 
 // Start Invoked at the beginning, can perform initializations, read the cache, etc.
 func Start(backgroundWorkerCount int, maxOutRequestsIn int) {
@@ -111,6 +113,7 @@ func getWorkFromCache(req WorkRequest) (bool, bool, WorkResponse) {
 // getCachedWork Retrieve work for a given hash; either from cache (if exists), or computed afresh from node.
 // Account is optional (may be empty).
 func getCachedWork(req WorkRequest) WorkResponse {
+	statusWorkInReqCount++
 	// Fill difficuly if missing
 	if req.Diff == 0 {
 		req.Diff = GetDefaultDifficulty()
@@ -119,6 +122,7 @@ func getCachedWork(req WorkRequest) WorkResponse {
 	found, inprogress, respFromCache := getWorkFromCache(req)
 	if (found) {
 		// found in cache, use it
+		statusWorkInReqFromCache++
 		return respFromCache
 	}
 	if (inprogress) {
@@ -126,7 +130,10 @@ func getCachedWork(req WorkRequest) WorkResponse {
 		log.Println("WARNING", "Work in progress but requested again, waiting; hash", req.Hash)
 		// wait for result
 		resp, err := waitForCacheResult(req)
-		if err != nil { return WorkResponse{Error: err} }
+		if err != nil {
+			return WorkResponse{Error: err}
+		}
+		// do not count this in the cache stat (because it had to wait)
 		return resp
 	}
 	// We need to call into RPC node for work.
@@ -154,7 +161,7 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	activeWorkOutReqCount++
 	defer decActiveWorkOutReqCount()
 
-	statusWorkReqCount++
+	statusWorkOutReqCount++
 	if activeWorkOutReqCount >= maxOutRequests {
 		// too many work requests
 		return WorkResponse{Error: errors.New("Overload: too many active outgoing work requests")}
@@ -173,7 +180,7 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	// we have response, add to cache
 	if (len(resp.Hash) == 0) { resp.Hash = req.Hash } // for the case if hash is missing in the response
 	addToCache(resp, req.Account, timeComputed)
-	statusWorkRespCount++
+	statusWorkOutRespCount++
 	log.Printf("Work resp from node, added to cache; dur %v, req %v, resp %v, \n", duration, req, resp)
 	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh", nil}
 }
@@ -193,10 +200,16 @@ func GetFrontierHash(url string, account string) (string, error) {
 	return hash, nil
 }
 
-// StatusWorkReqCount Return the number of work requests (to node) since start (including currently pending ones)
-func StatusWorkReqCount() int { return statusWorkReqCount }
+// StatusWorkOutReqCount Return the number of outgoing work requests (to node) since start (including currently pending ones)
+func StatusWorkOutReqCount() int { return statusWorkOutReqCount }
 
-// StatusWorkRespCount Return the number of work requests responses (from node) since start
-func StatusWorkRespCount() int { return statusWorkRespCount }
+// StatusWorkOutRespCount Return the number of outgoing work requests responses (from node) since start
+func StatusWorkOutRespCount() int { return statusWorkOutRespCount }
+
+// StatusWorkInReqCount Return the number of incoming work requests since start
+func StatusWorkInReqCount() int { return statusWorkInReqCount }
+
+// StatusWorkInReqFromCache Return the number of incoming work requests that could be serviced from the cache
+func StatusWorkInReqFromCache() int { return statusWorkInReqFromCache }
 
 func StatusActiveWorkOutReqCount() int { return activeWorkOutReqCount }
