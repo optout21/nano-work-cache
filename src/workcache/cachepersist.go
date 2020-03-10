@@ -20,13 +20,13 @@ func persistFileName() string {
 	return filename
 }
 
-// SaveCache Save the cache to file or orther persistence configured
+// SaveCache Save the cache to file or other persistence configured
 func SaveCache() {
 	if !isPersistToFileEnabled() { return }
 	saveToFile(persistFileName())
 }
 
-// LoadCache Load the cache from file or orther persistence configured
+// LoadCache Load the cache from file or other persistence configured
 func LoadCache() {
 	if !isPersistToFileEnabled() { return }
 	loadFromFile(persistFileName())

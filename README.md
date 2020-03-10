@@ -164,7 +164,8 @@ curl -d '{"action":"account_balance","account":"nano_3rpb7ddcd6kux978gkwxh1i1s6c
 ## Not (yet) done
 
 - Periodically retrieve current difficulty from node
-- Aging of cache entries (e.g. after 7 days)
-- Periodical persist save (if changed)
+- Aging of cache entries (e.g. after 10 days)
 - Support nano work peers
-- Listen on new blocks from node; if a new block is created for a recently used account, start work computation right away, without being requested
+- Cache cleanup: remove old entries for accounts, for which newer one exists
+- React to proxied new block calls, trigger work computation for new block right away
+- Listen on new blocks from node; if a new block is created for a recently used account, trigger work computation for new block right away

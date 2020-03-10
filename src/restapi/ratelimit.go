@@ -9,7 +9,7 @@ import (
 )
 
 var activeHandlerCount int = 0
-var maxActiveHandlerCount int = 200
+var maxActiveHandlerCount int = 1000
 
 // ActiveHandlerCount Return current number of conccurrent active handlers
 func ActiveHandlerCount() int { return activeHandlerCount }
