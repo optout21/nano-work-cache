@@ -61,7 +61,7 @@ go run sample.go
 
 ## Usage by light wallets
 
-Light wallets, working together with nano-work-cache, can access precomputed work without much effort.
+Light wallets, working together with NanoWorkCache, can access precomputed work without much effort.
 There are several styles for integration:
 
 1. Fully automatic: the wallet has to do nothing extra:
