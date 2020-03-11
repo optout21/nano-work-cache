@@ -47,12 +47,16 @@ func Start(backgroundWorkerCount int, maxOutRequestsIn int) {
 	go housekeepingCycle()
 }
 
-// Generate Generate work, in foreground, but for rate limiting and priority handling it goes to a pool worker.
+// Generate Generate work or take from cache. Generation done in foreground.
 // Account is optional, may by empty. 
 // Difficulty may be 0, default will be used
 func Generate(url string, hash string, difficulty uint64, account string) (WorkResponse, error) {
 	req := WorkRequest{url, WorkInputHash, hash, difficulty, account}
-	resp := getCachedWork(req)
+	resp, fromcache := getCachedWork(req)
+	statusWorkInReqCount++
+	if fromcache {
+		statusWorkInReqFromCache++
+	}
 	return resp, resp.Error
 }
 
@@ -112,8 +116,8 @@ func getWorkFromCache(req WorkRequest) (bool, bool, WorkResponse) {
 
 // getCachedWork Retrieve work for a given hash; either from cache (if exists), or computed afresh from node.
 // Account is optional (may be empty).
-func getCachedWork(req WorkRequest) WorkResponse {
-	statusWorkInReqCount++
+// Return response and true if it is taken from cache
+func getCachedWork(req WorkRequest) (WorkResponse, bool) {
 	// Fill difficuly if missing
 	if req.Diff == 0 {
 		req.Diff = GetDefaultDifficulty()
@@ -122,8 +126,7 @@ func getCachedWork(req WorkRequest) WorkResponse {
 	found, inprogress, respFromCache := getWorkFromCache(req)
 	if (found) {
 		// found in cache, use it
-		statusWorkInReqFromCache++
-		return respFromCache
+		return respFromCache, true
 	}
 	if (inprogress) {
 		// computation is in progress, wait
@@ -131,14 +134,14 @@ func getCachedWork(req WorkRequest) WorkResponse {
 		// wait for result
 		resp, err := waitForCacheResult(req)
 		if err != nil {
-			return WorkResponse{Error: err}
+			// non-success (timeout), do not count as cache success
+			return WorkResponse{Error: err}, false
 		}
-		// do not count this in the cache stat (because it had to wait)
-		return resp
+		return resp, true
 	}
 	// We need to call into RPC node for work.
 	resp := getWorkFreshSync(req)
-	return resp
+	return resp, false
 }
 
 // If input is account, get frontier first
@@ -148,7 +151,7 @@ func getCachedWorkByAccountOrHash(req WorkRequest) WorkResponse {
 		if err != nil { return WorkResponse{Error: err} }
 		req.Hash = hash
 	}
-	resp := getCachedWork(req)
+	resp, _ := getCachedWork(req)
 	return resp
 }
 
