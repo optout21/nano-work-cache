@@ -22,6 +22,8 @@ Light wallets need only to fire a simple message to trigger work computation in 
 when it is needed.  At that time PoW will be retured fast from the cache.
 The Nano Work Cache does not compute work itself, it just proxies work reqests to a node, and caches results.
 
+In a real-world usage, cache hit ratio was **92%**.  In a larger wallet setup, over a period of several days, 3412 work requests were served from the cache, out of 3703.  During the same period, an additional 2627 work proofs have been precomputed.
+
 ## Prerequisites
 
 * Golang
@@ -80,7 +82,7 @@ See also the details of the [Integration Options (API.md)](API.md).
 
 - Periodically retrieve current difficulty from node
 - Aging of cache entries (e.g. after 10 days)
+- Store cache in Redis
 - Support nano work peers
 - Cache cleanup: remove old entries for accounts, for which newer one exists
-- React to proxied new block calls, trigger work computation for new block right away
 - Listen on new blocks from node; if a new block is created for a recently used account, trigger work computation for new block right away
