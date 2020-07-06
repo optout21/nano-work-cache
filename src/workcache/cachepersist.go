@@ -53,6 +53,17 @@ func LoadCache() {
 func saveToFile(filename string) {
 	startTime := time.Now()
 
+	// fast exclusive local copy
+	workCacheLock.Lock()
+	n := len(workCache)
+	workCacheCopy := make(map[string]CacheEntry, n)
+	for key, entry := range workCache {
+		workCacheCopy[key] = entry
+	}
+	workCacheLock.Unlock()
+	elapsed := time.Now().Sub(startTime)
+	log.Printf("Save: local mem copy is made %v %v, dur %v ms", n, len(workCacheCopy), elapsed.Milliseconds())
+
 	// try to rename old file to .bak (ignore error if not possible / not exists)
 	fileNameBak := backupFileName(filename)
 	_ = os.Remove(fileNameBak)
@@ -66,7 +77,7 @@ func saveToFile(filename string) {
 	defer file.Close()
 
 	var cnt int = 0
-	for _, entry := range workCache {
+	for _, entry := range workCacheCopy {
 		line := entryToString(entry)
 		if len(line) > 0 {
 			fmt.Fprintln(file, entryToString(entry))

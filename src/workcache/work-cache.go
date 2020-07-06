@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/catenocrypt/nano-work-cache/rpcclient"
@@ -26,6 +27,8 @@ type CacheEntry struct {
 var (
 	// The cache, key is hash
 	workCache map[string]CacheEntry = map[string]CacheEntry{}
+	// Mutex to protect write and enumeration
+	workCacheLock = &sync.Mutex{}
 	// Time of last addition to cache
 	cacheUpdateTime int64 = 0
 )
@@ -65,14 +68,18 @@ func addToCacheInternal(e CacheEntry) {
 		// empty key, omit
 		return
 	}
+	workCacheLock.Lock()
 	now := time.Now().Unix()
 	e.timeAdded = now
 	workCache[e.hash] = e
+	workCacheLock.Unlock()
 	cacheUpdateTime = now
 }
 
 func getFromCache(hash string) (CacheEntry, bool) {
+	workCacheLock.Lock()
 	e, ok := workCache[hash]
+	workCacheLock.Unlock()
 	if !ok {
 		// not in cache
 		return e, false
