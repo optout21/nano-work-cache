@@ -3,29 +3,32 @@
 package workcache
 
 import (
-	"github.com/catenocrypt/nano-work-cache/rpcclient"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/catenocrypt/nano-work-cache/rpcclient"
 )
 
 type CacheEntry struct {
-	hash string
-	work string
+	hash       string
+	work       string
 	difficulty uint64
 	multiplier float64
-	account string
+	account    string
 	// valid, computing
-	status string
+	status       string
 	timeComputed int64 // unix time
-	timeAdded int64
+	timeAdded    int64
 }
 
-// The cache, key is hash
-var workCache map[string]CacheEntry = map[string]CacheEntry{}
-// Time of last addition to cache
-var cacheUpdateTime int64 = 0
+var (
+	// The cache, key is hash
+	workCache map[string]CacheEntry = map[string]CacheEntry{}
+	// Time of last addition to cache
+	cacheUpdateTime int64 = 0
+)
 
 func CacheUpdateTime() int64 { return cacheUpdateTime }
 
@@ -70,7 +73,7 @@ func addToCacheInternal(e CacheEntry) {
 
 func getFromCache(hash string) (CacheEntry, bool) {
 	e, ok := workCache[hash]
-	if (!ok) {
+	if !ok {
 		// not in cache
 		return e, false
 	}
@@ -79,7 +82,7 @@ func getFromCache(hash string) (CacheEntry, bool) {
 }
 
 func cacheIsValid(e CacheEntry) bool {
-	if (e.status == "valid") {
+	if e.status == "valid" {
 		return true
 	}
 	return false
@@ -87,7 +90,7 @@ func cacheIsValid(e CacheEntry) bool {
 
 // Note: difficulty may be missing (0)
 func cacheDiffIsOK(e CacheEntry, diff uint64) bool {
-	if (diff != 0 && e.difficulty != 0 && e.difficulty < diff) {
+	if diff != 0 && e.difficulty != 0 && e.difficulty < diff {
 		// but diff is smaller
 		return false
 	}
@@ -101,19 +104,23 @@ func StatusCacheSize() int {
 }
 
 func padString(val string) string {
-	if len(val) == 0 { return "_" }
+	if len(val) == 0 {
+		return "_"
+	}
 	return val
 }
 
 // Convert an entry to a single-line stirng representation
 func entryToString(entry CacheEntry) string {
-	if len(entry.hash) == 0 { return "" }
-	return fmt.Sprintf("%v %v %x %v %v %v %v %v", padString(entry.hash), padString(entry.work), entry.difficulty, entry.multiplier, 
+	if len(entry.hash) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("%v %v %x %v %v %v %v %v", padString(entry.hash), padString(entry.work), entry.difficulty, entry.multiplier,
 		padString(entry.account), padString(entry.status), entry.timeComputed, entry.timeAdded)
 }
 
 // Fill cache entry from a single-line stirng represenation (parse it), see entryToString.
-// Returns true on success. 
+// Returns true on success.
 func entryLoadFromString(line string, entry *CacheEntry) bool {
 	tokens := strings.Split(line, " ")
 	if len(tokens) < 2 {

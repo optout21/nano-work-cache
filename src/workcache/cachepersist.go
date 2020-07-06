@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 func isPersistToFileEnabled() bool {
@@ -50,7 +51,9 @@ func LoadCache() {
 
 // saveToFile save cache to the given file
 func saveToFile(filename string) {
-	// first try to rename old file to .bak (ignore error if not possible / not exists)
+	startTime := time.Now()
+
+	// try to rename old file to .bak (ignore error if not possible / not exists)
 	fileNameBak := backupFileName(filename)
 	_ = os.Remove(fileNameBak)
 	_ = os.Rename(filename, fileNameBak)
@@ -70,7 +73,8 @@ func saveToFile(filename string) {
 			cnt++
 		}
 	}
-	log.Printf("Cache saved to file, %v entries\n", cnt)
+	elapsed2 := time.Now().Sub(startTime)
+	log.Printf("Cache saved to file, %v entries, dur %v ms", cnt, elapsed2.Milliseconds())
 }
 
 // loadFromFile Read cache entries from the given file, merge them with current cache
