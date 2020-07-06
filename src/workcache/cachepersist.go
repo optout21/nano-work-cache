@@ -30,18 +30,28 @@ func SaveCache() {
 	saveToFile(persistFileName())
 }
 
+func backupFileName(filename string) string {
+	return filename + ".bak"
+}
+
 // LoadCache Load the cache from file or other persistence configured
 func LoadCache() {
 	if !isPersistToFileEnabled() {
 		return
 	}
-	loadFromFile(persistFileName())
+	filename := persistFileName()
+	err := loadFromFile(filename)
+	if err == nil {
+		return
+	}
+	// try bak file
+	_ = loadFromFile(backupFileName(filename))
 }
 
 // saveToFile save cache to the given file
 func saveToFile(filename string) {
 	// first try to rename old file to .bak (ignore error if not possible / not exists)
-	fileNameBak := filename + ".bak"
+	fileNameBak := backupFileName(filename)
 	_ = os.Remove(fileNameBak)
 	_ = os.Rename(filename, fileNameBak)
 	// open new file for writing
@@ -64,11 +74,11 @@ func saveToFile(filename string) {
 }
 
 // loadFromFile Read cache entries from the given file, merge them with current cache
-func loadFromFile(filename string) {
+func loadFromFile(filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		log.Println("Error loading cache from file, could not open file;", err.Error())
-		return
+		return err
 	}
 	defer file.Close()
 
@@ -92,7 +102,9 @@ func loadFromFile(filename string) {
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
+		return err
 	}
 
 	log.Printf("Cache loaded from file %v, %v entries read, %v entries\n", filename, cnt, StatusCacheSize())
+	return nil
 }
