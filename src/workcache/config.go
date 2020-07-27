@@ -29,6 +29,7 @@ func readConfigIfNeeded() {
 	viper.SetDefault("Main.RestMaxActiveRequests", 200)
 	viper.SetDefault("Main.BackgroundWorkerCount", 4)
 	viper.SetDefault("Main.MaxOutRequests", 8)
+	viper.SetDefault("Main.MaxCacheAgeDays", 30)
 
 	// read config file
 	viper.SetConfigName(configFileName) // name of config file (without extension)

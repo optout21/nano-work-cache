@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+
 	"github.com/catenocrypt/nano-work-cache/restapi"
 	"github.com/catenocrypt/nano-work-cache/workcache"
 )
@@ -18,12 +19,12 @@ func check(err error) {
 
 func main() {
 	// first optional paramter is config file name
-	if (len(os.Args) > 1) {
+	if len(os.Args) > 1 {
 		workcache.SetConfigFile(os.Args[1])
 	}
 
 	rpcUrl := workcache.ConfigGetString("Main.NodeRpc")
-	if (len(rpcUrl) == 0) {
+	if len(rpcUrl) == 0 {
 		panic("No value configured for Main.NodeRpc")
 	}
 	fmt.Printf("Config: NodeRpc  %v \n", rpcUrl)
@@ -39,10 +40,12 @@ func main() {
 	maxOutRequests := workcache.ConfigGetIntWithDefault("Main.MaxOutRequests", 8)
 	maxOutRequests = int(math.Max(float64(maxOutRequests), float64(3)))
 	maxOutRequests = int(math.Min(float64(maxOutRequests), float64(30)))
-	maxOutRequests = int(math.Max(float64(maxOutRequests), float64(backgroundWorkerCount + 1)))
+	maxOutRequests = int(math.Max(float64(maxOutRequests), float64(backgroundWorkerCount+1)))
 	fmt.Printf("Config: MaxOutRequests  %v \n", maxOutRequests)
-	
-	workcache.Start(backgroundWorkerCount, maxOutRequests)
+	maxCacheAgeDays := workcache.ConfigGetIntWithDefault("Main.MaxCacheAgeDays", 30)
+	fmt.Printf("Config: MaxCacheAgeDays  %v \n", maxCacheAgeDays)
+
+	workcache.Start(backgroundWorkerCount, maxOutRequests, maxCacheAgeDays)
 
 	restapi.Start(rpcUrl, listenIpPort, restMaxActiveRequests)
 }

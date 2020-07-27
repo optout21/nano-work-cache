@@ -35,15 +35,17 @@ type WorkResponse struct {
 }
 
 var maxOutRequests int = 8
+var maxCacheAgeDays int = 0
 var statusWorkOutReqCount int = 0
 var statusWorkOutRespCount int = 0
 var statusWorkInReqCount int = 0
 var statusWorkInReqFromCache int = 0
 
 // Start Invoked at the beginning, can perform initializations, read the cache, etc.
-func Start(backgroundWorkerCount int, maxOutRequestsIn int) {
+func Start(backgroundWorkerCount int, maxOutRequestsIn int, maxCacheAgeDaysIn int) {
 	LoadCache()
 	maxOutRequests = maxOutRequestsIn
+	maxCacheAgeDays = maxCacheAgeDaysIn
 	startWorkers(backgroundWorkerCount)
 	go housekeepingCycle()
 }
