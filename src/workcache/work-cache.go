@@ -73,8 +73,8 @@ func addToCacheInternal(e CacheEntry) {
 	now := time.Now().Unix()
 	e.timeAdded = now
 	workCache[e.hash] = e
-	workCacheLock.Unlock()
 	cacheUpdateTime = now
+	workCacheLock.Unlock()
 }
 
 func getFromCache(hash string) (CacheEntry, bool) {
@@ -166,6 +166,7 @@ func RemoveOldEntries(cutoffAgeDays float64) {
 	newSize := len(newCache)
 	if newSize != oldSize {
 		workCache = newCache
+		cacheUpdateTime = now
 		log.Println("Cache: Removed old entries, size reduced from", oldSize, "to", newSize, "(cutoff", cutoffAgeDays, "days )")
 	}
 	workCacheLock.Unlock()

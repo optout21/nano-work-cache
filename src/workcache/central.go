@@ -43,9 +43,10 @@ var statusWorkInReqFromCache int = 0
 
 // Start Invoked at the beginning, can perform initializations, read the cache, etc.
 func Start(backgroundWorkerCount int, maxOutRequestsIn int, maxCacheAgeDaysIn int) {
-	LoadCache()
 	maxOutRequests = maxOutRequestsIn
 	maxCacheAgeDays = maxCacheAgeDaysIn
+	LoadCache()
+	RemoveOldEntries(float64(maxCacheAgeDays))
 	startWorkers(backgroundWorkerCount)
 	go housekeepingCycle()
 }
