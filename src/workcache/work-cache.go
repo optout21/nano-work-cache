@@ -4,6 +4,7 @@ package workcache
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -72,8 +73,8 @@ func addToCacheInternal(e CacheEntry) {
 	now := time.Now().Unix()
 	e.timeAdded = now
 	workCache[e.hash] = e
-	workCacheLock.Unlock()
 	cacheUpdateTime = now
+	workCacheLock.Unlock()
 }
 
 func getFromCache(hash string) (CacheEntry, bool) {
@@ -149,4 +150,24 @@ func entryLoadFromString(line string, entry *CacheEntry) bool {
 		entry.timeAdded = timeAdded
 	}
 	return true
+}
+
+func RemoveOldEntries(cutoffAgeDays float64) {
+	workCacheLock.Lock()
+	oldSize := len(workCache)
+	var newCache map[string]CacheEntry = make(map[string]CacheEntry, oldSize)
+	now := time.Now().Unix()
+	for key, entry := range workCache {
+		ageDay := float64(now-entry.timeComputed) / float64(3600*24)
+		if ageDay <= cutoffAgeDays {
+			newCache[key] = entry
+		}
+	}
+	newSize := len(newCache)
+	if newSize != oldSize {
+		workCache = newCache
+		cacheUpdateTime = now
+		log.Println("Cache: Removed old entries, size reduced from", oldSize, "to", newSize, "(cutoff", cutoffAgeDays, "days )")
+	}
+	workCacheLock.Unlock()
 }
