@@ -7,33 +7,34 @@ import (
 	"errors"
 	"log"
 	"time"
+
 	"github.com/catenocrypt/nano-work-cache/rpcclient"
 )
 
 const (
-	WorkInputHash = 0
+	WorkInputHash    = 0
 	WorkInputAccount = 1
 )
 
 type WorkRequest struct {
-	Url string
-	Input int // WorkInputHash or Account
-	Hash string
-	Diff uint64
+	Url     string
+	Input   int // WorkInputHash or Account
+	Hash    string
+	Diff    uint64
 	Account string
 }
 
 type WorkResponse struct {
-	Hash string
-	Work string
+	Hash       string
+	Work       string
 	Difficulty uint64
 	Multiplier float64
 	// values: 'fresh', 'cache'
 	Source string
-	Error error
+	Error  error
 }
 
-var maxOutRequests int = 8;
+var maxOutRequests int = 8
 var statusWorkOutReqCount int = 0
 var statusWorkOutRespCount int = 0
 var statusWorkInReqCount int = 0
@@ -48,7 +49,7 @@ func Start(backgroundWorkerCount int, maxOutRequestsIn int) {
 }
 
 // Generate Generate work or take from cache. Generation done in foreground.
-// Account is optional, may by empty. 
+// Account is optional, may by empty.
 // Difficulty may be 0, default will be used
 func Generate(url string, hash string, difficulty uint64, account string) (WorkResponse, error) {
 	req := WorkRequest{url, WorkInputHash, hash, difficulty, account}
@@ -61,7 +62,7 @@ func Generate(url string, hash string, difficulty uint64, account string) (WorkR
 }
 
 // PregenerateByHash Enqueue a pregeneration request, by hash
-// Account is optional, may by empty. 
+// Account is optional, may by empty.
 // Default difficulty will be used
 func PregenerateByHash(url string, hash string, account string) {
 	addPregenerateRequest(WorkRequest{url, WorkInputHash, hash, 0, account})
@@ -92,7 +93,9 @@ func waitForCacheResult(req WorkRequest) (WorkResponse, error) {
 // Returns if computation is in progress
 func getWorkFromCache(req WorkRequest) (bool, bool, WorkResponse) {
 	cachedEntry, ok := getFromCache(req.Hash)
-	if (!ok) { return false, false, WorkResponse{} }
+	if !ok {
+		return false, false, WorkResponse{}
+	}
 	// found in cache
 	if !cacheIsValid(cachedEntry) {
 		// found in cache, but not (yet) valid
@@ -104,11 +107,11 @@ func getWorkFromCache(req WorkRequest) (bool, bool, WorkResponse) {
 		return false, false, WorkResponse{}
 	}
 	// found in cache, use it
-	return true, false, WorkResponse {
+	return true, false, WorkResponse{
 		cachedEntry.hash,
 		cachedEntry.work,
 		cachedEntry.difficulty,
-		cachedEntry.multiplier, 
+		cachedEntry.multiplier,
 		"cache",
 		nil,
 	}
@@ -124,11 +127,11 @@ func getCachedWork(req WorkRequest) (WorkResponse, bool) {
 	}
 	// get from cache
 	found, inprogress, respFromCache := getWorkFromCache(req)
-	if (found) {
+	if found {
 		// found in cache, use it
 		return respFromCache, true
 	}
-	if (inprogress) {
+	if inprogress {
 		// computation is in progress, wait
 		log.Println("WARNING", "Work in progress but requested again, waiting; hash", req.Hash)
 		// wait for result
@@ -148,7 +151,9 @@ func getCachedWork(req WorkRequest) (WorkResponse, bool) {
 func getCachedWorkByAccountOrHash(req WorkRequest) WorkResponse {
 	if req.Input == WorkInputAccount {
 		hash, err := GetFrontierHash(req.Url, req.Account)
-		if err != nil { return WorkResponse{Error: err} }
+		if err != nil {
+			return WorkResponse{Error: err}
+		}
 		req.Hash = hash
 	}
 	resp, _ := getCachedWork(req)
@@ -156,6 +161,7 @@ func getCachedWorkByAccountOrHash(req WorkRequest) WorkResponse {
 }
 
 var activeWorkOutReqCount int = 0
+
 func decActiveWorkOutReqCount() { activeWorkOutReqCount-- }
 
 // getWorkFreshSync Obtain the work now, by calling into the RPC node
@@ -176,27 +182,29 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	// trigger work
 	timeComputed := time.Now().Unix()
 	resp, err, duration := rpcclient.GetWork(req.Url, req.Hash, req.Diff)
-	if (err != nil) {
+	if err != nil {
 		return WorkResponse{Error: err}
 	}
-	
+
 	// we have response, add to cache
-	if (len(resp.Hash) == 0) { resp.Hash = req.Hash } // for the case if hash is missing in the response
+	if len(resp.Hash) == 0 {
+		resp.Hash = req.Hash
+	} // for the case if hash is missing in the response
 	addToCache(resp, req.Account, timeComputed)
 	statusWorkOutRespCount++
 	log.Printf("Work resp from node, added to cache; dur %v, req %v, resp %v, \n", duration, req, resp)
-	return WorkResponse {resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh", nil}
+	return WorkResponse{resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh", nil}
 }
 
 // get default difficulty -- TODO should come from RPC, cached
 func GetDefaultDifficulty() uint64 {
-	return 0xffffffc000000000;
+	return 0xffffffc000000000
 }
 
 func GetFrontierHash(url string, account string) (string, error) {
 	// get frontier of account
 	hash, err := rpcclient.GetFrontier(url, account)
-	if (err != nil) {
+	if err != nil {
 		return "", errors.New("Could not obtain frontier block for account " + account + ", " + err.Error())
 	}
 	log.Println("Frontier block of account", account, "is", hash)

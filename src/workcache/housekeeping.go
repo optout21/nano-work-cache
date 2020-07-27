@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-var housekeepingPeriodSec int = 1 * 60;
+var housekeepingPeriodSec int = 1 * 60
 
 var lastCacheSaveTime int64 = 0
 
 // Housekeeping is executed periodically.  It incudes:
-// - Saving the cachefile (if it has changed since last time) 
+// - Saving the cachefile (if it has changed since last time)
 func housekeepingCycle() {
 	lastCacheSaveTime = CacheUpdateTime()
 	for {

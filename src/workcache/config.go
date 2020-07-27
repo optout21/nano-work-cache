@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+
 	"github.com/spf13/viper"
 )
 
@@ -17,7 +18,9 @@ func SetConfigFile(configFile string) {
 }
 
 func readConfigIfNeeded() {
-	if (configRead) { return } // already read
+	if configRead {
+		return
+	} // already read
 
 	// set defaults
 	// no default for "Main.NodeRpc", must be set
@@ -29,10 +32,10 @@ func readConfigIfNeeded() {
 
 	// read config file
 	viper.SetConfigName(configFileName) // name of config file (without extension)
-	viper.AddConfigPath(".")      // optionally look for config in the working directory
+	viper.AddConfigPath(".")            // optionally look for config in the working directory
 	viper.AddConfigPath("/")
 	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil { // Handle errors reading the config file
+	if err != nil {             // Handle errors reading the config file
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
 	configRead = true
