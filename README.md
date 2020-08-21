@@ -57,6 +57,10 @@ go run main.go
 For testing, from another shell:
 
 ```shell
+curl -d '{"action": "work_generate","hash": "718CC2121C3E641059BC1C2CFC45666C99E8AE922F7A807B7D07B62C995D79E2","difficulty": "ffffffd21c3933f3"}' localhost:7376
+```
+
+```shell
 cd src/sample
 go run sample.go
 ```
@@ -81,8 +85,8 @@ See also the details of the [Integration Options (API.md)](API.md).
 ## Not (yet) done
 
 - Periodically retrieve current difficulty from node
-- Aging of cache entries (e.g. after 10 days)
 - Store cache in Redis
 - Support nano work peers
 - Cache cleanup: remove old entries for accounts, for which newer one exists
 - Listen on new blocks from node; if a new block is created for a recently used account, trigger work computation for new block right away
+  (start pre-work even without any user activity).
