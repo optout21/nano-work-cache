@@ -118,7 +118,7 @@ func padString(val string) string {
 	return val
 }
 
-// Convert an entry to a single-line stirng representation
+// Convert an entry to a single-line string representation
 func entryToString(entry CacheEntry) string {
 	if len(entry.hash) == 0 {
 		return ""
@@ -127,7 +127,7 @@ func entryToString(entry CacheEntry) string {
 		padString(entry.account), padString(entry.status), entry.timeComputed, entry.timeAdded)
 }
 
-// Fill cache entry from a single-line stirng represenation (parse it), see entryToString.
+// Fill cache entry from a single-line string represenation (parse it), see entryToString.
 // Returns true on success.
 func entryLoadFromString(line string, entry *CacheEntry) bool {
 	tokens := strings.Split(line, " ")
