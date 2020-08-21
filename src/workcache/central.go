@@ -110,6 +110,7 @@ func getWorkFromCache(req WorkRequest) (bool, bool, WorkResponse) {
 		return false, true, WorkResponse{}
 	}
 	if !IsWorkValueValid(cachedEntry.work) {
+		log.Println("WARNING", "Invalid work value found in cache", cachedEntry.work, cachedEntry.hash)
 		return false, false, WorkResponse{}
 	}
 	if !cacheDiffIsOK(cachedEntry, req.Diff) {

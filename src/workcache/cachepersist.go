@@ -107,12 +107,16 @@ func loadFromFile(filename string) error {
 		if !lineParsed {
 			continue
 		}
+		cnt++
 		// omit non-"valid" entries
 		if entry.status != "valid" {
 			continue
 		}
+		// omit invalid work vaules
+		if !IsWorkValueValid(entry.work) {
+			continue
+		}
 		addToCacheInternal(entry)
-		cnt++
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -120,6 +124,6 @@ func loadFromFile(filename string) error {
 		return err
 	}
 
-	log.Printf("Cache loaded from file %v, %v entries read, %v entries\n", filename, cnt, StatusCacheSize())
+	log.Printf("Cache loaded from file %v, %v entries read, %v stored\n", filename, cnt, StatusCacheSize())
 	return nil
 }
