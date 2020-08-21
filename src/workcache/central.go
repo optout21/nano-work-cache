@@ -91,6 +91,11 @@ func waitForCacheResult(req WorkRequest) (WorkResponse, error) {
 	return WorkResponse{}, errors.New("Timeout in work generation")
 }
 
+// Check is a work value string looks valid: not empty, hex string
+func IsWorkValueValid(work string) bool {
+	return len(work) > 9
+}
+
 // getWorkFromCache Try to get work from cache, nil is returned if not found in cache, or not valid
 // Returns if valid work found in cache
 // Returns if computation is in progress
@@ -103,6 +108,9 @@ func getWorkFromCache(req WorkRequest) (bool, bool, WorkResponse) {
 	if !cacheIsValid(cachedEntry) {
 		// found in cache, but not (yet) valid
 		return false, true, WorkResponse{}
+	}
+	if !IsWorkValueValid(cachedEntry.work) {
+		return false, false, WorkResponse{}
 	}
 	if !cacheDiffIsOK(cachedEntry, req.Diff) {
 		// found but diff is smaller, must recompute
