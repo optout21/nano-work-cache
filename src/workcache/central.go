@@ -40,6 +40,7 @@ var statusWorkOutReqCount int = 0
 var statusWorkOutRespCount int = 0
 var statusWorkInReqCount int = 0
 var statusWorkInReqFromCache int = 0
+var statusWorkInReqError int = 0
 
 // Start Invoked at the beginning, can perform initializations, read the cache, etc.
 func Start(backgroundWorkerCount int, maxOutRequestsIn int, maxCacheAgeDaysIn int) {
@@ -60,6 +61,9 @@ func Generate(url string, hash string, difficulty uint64, account string) (WorkR
 	statusWorkInReqCount++
 	if fromcache {
 		statusWorkInReqFromCache++
+	}
+	if resp.Error != nil || !IsWorkValueValid(resp.Work) {
+		statusWorkInReqError++
 	}
 	return resp, resp.Error
 }
@@ -234,5 +238,8 @@ func StatusWorkInReqCount() int { return statusWorkInReqCount }
 
 // StatusWorkInReqFromCache Return the number of incoming work requests that could be serviced from the cache
 func StatusWorkInReqFromCache() int { return statusWorkInReqFromCache }
+
+// StatusWorkInReqError Return the number of incoming work requests that were returned with error
+func StatusWorkInReqError() int { return statusWorkInReqError }
 
 func StatusActiveWorkOutReqCount() int { return activeWorkOutReqCount }
