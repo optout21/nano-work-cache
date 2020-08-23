@@ -3,8 +3,9 @@
 package restapi
 
 import (
-	"github.com/catenocrypt/nano-work-cache/workcache"
 	"fmt"
+
+	"github.com/catenocrypt/nano-work-cache/workcache"
 )
 
 // Return the inner status info of the service, in Json string
@@ -15,7 +16,9 @@ func getStatus() string {
 	workInReqCount := workcache.StatusWorkInReqCount()
 	workInReqFromCache := workcache.StatusWorkInReqFromCache()
 	var workInReqCacheRatio float32 = 0
-	if workInReqCount > 0 { workInReqCacheRatio = float32(workInReqFromCache) / float32(workInReqCount) }
+	if workInReqCount > 0 {
+		workInReqCacheRatio = float32(workInReqFromCache) / float32(workInReqCount)
+	}
 	activeHandlerCount := ActiveHandlerCount()
 	activeWorkOutReqCount := workcache.StatusActiveWorkOutReqCount()
 	pregenerQueSize := workcache.StatusPregenerQueueSize()
