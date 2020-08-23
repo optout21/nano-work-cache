@@ -235,8 +235,13 @@ func StatusWorkOutReqCount() int { return statusWorkOutReqCount }
 // StatusWorkOutRespCount Return the number of outgoing work requests responses (from node) since start
 func StatusWorkOutRespCount() int { return statusWorkOutRespCount }
 
-// statusWorkOutDurationTotal Return the total duration in ms of the outgoing work requests, StatusWorkOutRespCount() in number
-func StatusWorkOutDurationTotal() int64 { return statusWorkOutDurationTotal }
+// statusWorkOutDurationAvg Return the average duration in ms of the outgoing work requests
+func StatusWorkOutDurationAvg() int {
+	if statusWorkOutRespCount == 0 {
+		return 0
+	}
+	return int(float32(statusWorkOutDurationTotal) / float32(statusWorkOutRespCount))
+}
 
 // StatusWorkInReqCount Return the number of incoming work requests since start
 func StatusWorkInReqCount() int { return statusWorkInReqCount }

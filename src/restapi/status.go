@@ -13,10 +13,7 @@ func getStatus() string {
 	cacheSize := workcache.StatusCacheSize()
 	workOutReqCount := workcache.StatusWorkOutReqCount()
 	workOutRespCount := workcache.StatusWorkOutRespCount()
-	var workOutDurAvg int = 0
-	if workOutRespCount > 0 {
-		workOutDurAvg = int(float32(workcache.StatusWorkOutDurationTotal()) / float32(workOutRespCount))
-	}
+	workOutDurAvg := workcache.StatusWorkOutDurationAvg()
 	workInReqCount := workcache.StatusWorkInReqCount()
 	workInReqFromCache := workcache.StatusWorkInReqFromCache()
 	workInReqError := workcache.StatusWorkInReqError()
