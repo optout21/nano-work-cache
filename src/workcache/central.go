@@ -38,6 +38,7 @@ var maxOutRequests int = 8
 var maxCacheAgeDays int = 0
 var statusWorkOutReqCount int = 0
 var statusWorkOutRespCount int = 0
+var statusWorkOutDurationTotal int64 = 0
 var statusWorkInReqCount int = 0
 var statusWorkInReqFromCache int = 0
 var statusWorkInReqError int = 0
@@ -208,6 +209,7 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	} // for the case if hash is missing in the response
 	addToCache(resp, req.Account, timeComputed)
 	statusWorkOutRespCount++
+	statusWorkOutDurationTotal += duration.Milliseconds()
 	log.Printf("Work resp from node, added to cache; dur %v, req %v, resp %v, \n", duration, req, resp)
 	return WorkResponse{resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh", nil}
 }
@@ -232,6 +234,9 @@ func StatusWorkOutReqCount() int { return statusWorkOutReqCount }
 
 // StatusWorkOutRespCount Return the number of outgoing work requests responses (from node) since start
 func StatusWorkOutRespCount() int { return statusWorkOutRespCount }
+
+// statusWorkOutDurationTotal Return the total duration in ms of the outgoing work requests, StatusWorkOutRespCount() in number
+func StatusWorkOutDurationTotal() int64 { return statusWorkOutDurationTotal }
 
 // StatusWorkInReqCount Return the number of incoming work requests since start
 func StatusWorkInReqCount() int { return statusWorkInReqCount }
