@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"strconv"
@@ -11,6 +12,50 @@ import (
 
 	"github.com/catenocrypt/nano-work-cache/rpcclient"
 )
+
+const MonitorFreq int = 150     // sec
+const TimeFromBalanceToWork = 6 // sec
+
+type Stats struct {
+	Success        bool
+	IterationCount int
+	DurationLast   time.Duration
+	DurationTotal  time.Duration
+}
+
+func (s *Stats) ToString() string {
+	return fmt.Sprintf("success %v  iterCount %v  durLast %v  durTotal %v", s.Success, s.IterationCount, s.DurationLast, s.DurationTotal)
+}
+
+type CumulStats struct {
+	Count          int
+	Success        int
+	IterationCount int
+	DurationLast   time.Duration
+	DurationTotal  time.Duration
+}
+
+func (s *CumulStats) Add(s2 Stats) {
+	s.Count++
+	if s2.Success {
+		s.Success++
+	}
+	s.IterationCount += s2.IterationCount
+	s.DurationLast += s2.DurationLast
+	s.DurationTotal += s2.DurationTotal
+}
+
+func (s *CumulStats) ToString() string {
+	if s.Count <= 0 {
+		return "empty"
+	}
+	return fmt.Sprintf("cnt %v  success %v  iterCount %v  durLast %v  durTotal %v",
+		s.Count,
+		s.Success,
+		float32(s.IterationCount)/float32(s.Count),
+		float32(s.DurationLast.Milliseconds())/float32(s.Count),
+		float32(s.DurationTotal.Milliseconds())/float32(s.Count))
+}
 
 const nodeUrl = "https://nano-rpc.trustwalletapp.com"
 
@@ -39,38 +84,34 @@ func pregenerate(hash string) {
 // - wait some seconds
 // - ge work
 // - in case of failure, repeat until ok (or max 10 tries)
-// Return
-// - success
-// - number of iterations (usually 1)
-// - duration of last work get (usually single)
-// - total duration
-func makeAccountWorkCycle(hash string, initialDelay int) (bool, int, time.Duration, time.Duration) {
+// Return Stats
+func makeCycle(hash string) Stats {
 	log.Printf("Cycle: starting for hash %v \n", hash)
 	timeStart := time.Now()
 	pregenerate(hash)
 
-	log.Printf("Cycle: sleep %v \n", initialDelay)
-	time.Sleep(time.Duration(initialDelay) * time.Second)
+	toSleep := timeStart.Add(time.Duration(TimeFromBalanceToWork) * time.Second).Sub(time.Now())
+	log.Printf("Cycle: sleep %v \n", toSleep)
+	time.Sleep(toSleep)
 
-	success := false
-	stepCount := 0
-	var duration1 time.Duration = 0
-	var res bool = false
-	for stepCount = 0; stepCount < 10; {
-		stepCount++
-		log.Printf("Cycle: step %v \n", stepCount)
-		res, duration1 = getWork(hash)
+	stats := Stats{false, 0, 0, 0}
+	timeStartWork := time.Now()
+	for stats.IterationCount = 0; stats.IterationCount < 10; {
+		stats.IterationCount++
+		log.Printf("Cycle: step %v \n", stats.IterationCount)
+		res, dur1 := getWork(hash)
 		if res {
-			success = true
+			stats.Success = true
+			stats.DurationLast = dur1
 			break
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
 	timeStop := time.Now()
-	durationTotal := timeStop.Sub(timeStart)
+	stats.DurationTotal = timeStop.Sub(timeStartWork)
 	//log.Printf("Cycle starting for hash %v \n", hash)
-	log.Printf("Cycle: stop, success %v, steps %v, duration1 %v, durationTotal %v \n", success, stepCount, duration1, durationTotal)
-	return success, stepCount, duration1, durationTotal
+	log.Printf("STAT1 %v \n", stats.ToString())
+	return stats
 }
 
 // Return a random hash (64 hex digits)
@@ -89,7 +130,23 @@ func getRandomHash() string {
 }
 
 func main() {
+	nextCheck := time.Now()
+	var cumulative CumulStats = CumulStats{}
 	rand.Seed(time.Now().UTC().UnixNano())
-	hash := getRandomHash()
-	makeAccountWorkCycle(hash, 6)
+
+	for {
+		now := time.Now()
+		untilNextCheck := nextCheck.Sub(now).Milliseconds()
+		if untilNextCheck > 0 {
+			log.Printf("Sleeping %v ms ...", untilNextCheck)
+			time.Sleep(time.Duration(untilNextCheck) * time.Millisecond)
+		}
+		nextCheck = nextCheck.Add(time.Duration(MonitorFreq) * time.Second)
+
+		hash := getRandomHash()
+		stats := makeCycle(hash)
+
+		cumulative.Add(stats)
+		log.Printf("STAT_CUMUL %v \n", cumulative.ToString())
+	}
 }
