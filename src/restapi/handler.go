@@ -5,11 +5,12 @@ package restapi
 import (
 	"encoding/json"
 	"fmt"
-    "log"
+	"log"
 	"net/http"
 	"strconv"
-	"github.com/catenocrypt/nano-work-cache/workcache"
+
 	"github.com/catenocrypt/nano-work-cache/rpcclient"
+	"github.com/catenocrypt/nano-work-cache/workcache"
 )
 
 type blockJson struct {
@@ -17,28 +18,28 @@ type blockJson struct {
 }
 
 type workGenerateJson struct {
-	Action string
-	Hash string
+	Action     string
+	Hash       string
 	Difficulty string
 }
 
 type workPregenerateByHashJson struct {
 	Action string
-	Hash string
+	Hash   string
 }
 
 type workPregenerateByAccountJson struct {
-	Action string
+	Action  string
 	Account string
 }
 
 type accountBalanceJson struct {
-	Action string
+	Action  string
 	Account string
 }
 
 type accountsBalancesJson struct {
-	Action string
+	Action   string
 	Accounts []string
 }
 
@@ -60,7 +61,7 @@ func workResponseToJson(resp workcache.WorkResponse) string {
 func proxyCall(url string, action string, req string) (string, error) {
 	log.Println("transaprent proxying of action", action)
 	respJSON, err := rpcclient.MakeGenericCall(url, req)
-	if (err != nil) {
+	if err != nil {
 		log.Println("RPC error:", err.Error())
 		return "", err
 	}
@@ -78,9 +79,9 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 		}
 		log.Println("work_generate req", workGenerate)
 		var difficulty uint64 = workcache.GetDefaultDifficulty()
-		if (len(workGenerate.Difficulty) > 0) {
+		if len(workGenerate.Difficulty) > 0 {
 			difficultyParsed, err := strconv.ParseUint(workGenerate.Difficulty, 16, 64)
-			if (err != nil) {
+			if err != nil {
 				// diff present, but could not parse
 				fmt.Fprintln(w, `{"error":"work_generate difficulty parse error"}`)
 				return
@@ -123,7 +124,7 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 		var account = workPregenerateByAccount.Account
 		// get frontier of account
 		hash, err := workcache.GetFrontierHash(nanoNodeUrl, account)
-		if (err != nil) {
+		if err != nil {
 			fmt.Fprintln(w, fmt.Sprintf(`{"error":"%v"}`, err.Error()))
 			return
 		}
@@ -148,13 +149,13 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 
 		// proxy the call
 		respJSON, err := proxyCall(nanoNodeUrl, action, string(reqBody))
-		if (err != nil) {
-			fmt.Fprintln(w, `{"error":"RPC error: ` + err.Error() + `","action":"` + action + `"}`)
+		if err != nil {
+			fmt.Fprintln(w, `{"error":"RPC error: `+err.Error()+`","action":"`+action+`"}`)
 			return
 		}
 		fmt.Fprintln(w, respJSON)
 		break
-		
+
 	case "accounts_balances":
 		// accounts_balances also triggers work_precompute (for all accounts) in the background, and transparently proxies the call for balances
 		var accountsBalances accountsBalancesJson
@@ -172,8 +173,8 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 
 		// proxy the call
 		respJSON, err := proxyCall(nanoNodeUrl, action, string(reqBody))
-		if (err != nil) {
-			fmt.Fprintln(w, `{"error":"RPC error: ` + err.Error() + `","action":"` + action + `"}`)
+		if err != nil {
+			fmt.Fprintln(w, `{"error":"RPC error: `+err.Error()+`","action":"`+action+`"}`)
 			return
 		}
 		fmt.Fprintln(w, respJSON)
@@ -196,10 +197,10 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 			account = requestWithBlock.Block.Account
 			log.Println("Extracted account from request action", action, "account", account)
 		}
-		
+
 		respJSON, err := proxyCall(nanoNodeUrl, action, string(reqBody))
-		if (err != nil) {
-			fmt.Fprintln(w, `{"error":"RPC error: ` + err.Error() + `","action":"` + action + `"}`)
+		if err != nil {
+			fmt.Fprintln(w, `{"error":"RPC error: `+err.Error()+`","action":"`+action+`"}`)
 			return
 		}
 
@@ -209,7 +210,7 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 		if err != nil {
 			log.Println("Warning: Error reading hash from response of" + action)
 		} else {
-			// we have the hash, trigger work computation 
+			// we have the hash, trigger work computation
 			hash := responseWithHash.Hash
 			if len(hash) > 0 {
 				log.Println("Reqesting work from action", action, "for hash", hash, "and account", account)
@@ -221,8 +222,8 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 	default:
 		// proxy any other request unmodified
 		respJSON, err := proxyCall(nanoNodeUrl, action, string(reqBody))
-		if (err != nil) {
-			fmt.Fprintln(w, `{"error":"RPC error: ` + err.Error() + `","action":"` + action + `"}`)
+		if err != nil {
+			fmt.Fprintln(w, `{"error":"RPC error: `+err.Error()+`","action":"`+action+`"}`)
 			return
 		}
 		fmt.Fprintln(w, respJSON)

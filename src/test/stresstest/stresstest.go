@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
 	"github.com/catenocrypt/nano-work-cache/rpcclient"
 )
 
@@ -23,7 +24,7 @@ func rpcCallPrint(url string, reqJson string, printResult bool) {
 	fmt.Println("Calling url", url, "with data", reqJson)
 	startTime := time.Now()
 	resp, err := rpcclient.RpcCall(url, reqJson)
-	if (err != nil) {
+	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
@@ -77,7 +78,7 @@ func runCommand() {
 		runAccountBalance()
 		return
 	}
-	
+
 	// rest: work_pregenerate_by_hash
 	runPregenerateByHash()
 }

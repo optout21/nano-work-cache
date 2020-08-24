@@ -15,25 +15,25 @@ var pregenerateJobs chan WorkRequest = make(chan WorkRequest, pregenerateJobsMax
 func addPregenerateRequest(req WorkRequest) {
 	// check in cache
 	found, _, _ := getWorkFromCache(req)
-	if (found) {
+	if found {
 		// found in cache, no need to compute
 		return
 	}
-	if len(pregenerateJobs) >= pregenerateJobsMaxSize - 2 {
+	if len(pregenerateJobs) >= pregenerateJobsMaxSize-2 {
 		// queue is full, do not put any more (to avoid blocking)
 		log.Printf("WARNING: Pregeneration queue is full, not enqueuing any more, %v\n", len(pregenerateJobs))
 	}
 	pregenerateJobs <- req
 }
 
-func doProcess(name int) {	
+func doProcess(name int) {
 	for {
 		// wait on queue, with periodical timeout
 		ticker := time.NewTicker(20 * time.Second)
 		defer ticker.Stop()
 
 		select {
-		case preJob := <- pregenerateJobs:
+		case preJob := <-pregenerateJobs:
 			//log.Printf("Worker %v : pregenerate job", name)
 			getCachedWorkByAccountOrHash(preJob)
 
