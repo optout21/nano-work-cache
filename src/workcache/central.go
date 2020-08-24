@@ -84,13 +84,13 @@ func PregenerateByAccount(url string, account string) {
 
 func waitForCacheResult(req WorkRequest) (WorkResponse, error) {
 	// TODO do with events, timeout
-	for i := 0; i < 120-5; i++ {
+	for i := 0; i < 100-1; i++ {
 		found, _, resp := getWorkFromCache(req)
 		if found {
 			return resp, resp.Error
 		}
 		// not found, wait
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(250 * time.Millisecond)
 	}
 	// not found
 	return WorkResponse{}, errors.New("Timeout in work generation")
