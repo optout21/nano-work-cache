@@ -9,6 +9,7 @@ import (
 
 // Random hash test data
 var tdRandomHashes []string
+
 // Some valid accounts
 var tdValidAccounts [5]string = [5]string{
 	"nano_11kfwesa9x3gsrmnjbujmrdrbc4s8sunbdfd5ttnertwjh9xm8uqs39tbsjy",
@@ -34,7 +35,7 @@ var hexDigits string = "0123456789ABCDEF"
 
 func randomHexDigit() string {
 	index := rand.Intn(16)
-	return hexDigits[index:index+1]
+	return hexDigits[index : index+1]
 }
 
 func generateRandomHash() string {

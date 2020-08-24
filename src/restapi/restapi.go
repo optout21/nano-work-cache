@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-    "log"
+	"log"
 	"net/http"
 )
 
@@ -15,13 +15,13 @@ type actionJson struct {
 }
 
 func handleRequest(w http.ResponseWriter, req *http.Request) {
-    if req.URL.Path != "/" {
-        http.Error(w, "404 not found.", http.StatusNotFound)
-        return
-    }
- 
-    switch req.Method {
-	case "GET":     
+	if req.URL.Path != "/" {
+		http.Error(w, "404 not found.", http.StatusNotFound)
+		return
+	}
+
+	switch req.Method {
+	case "GET":
 		fmt.Fprintf(w, "Welcome to my website!")
 		//http.ServeFile(w, r, "form.html")
 
@@ -42,9 +42,9 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-    default:
-        fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
-    }
+	default:
+		fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
+	}
 }
 
 var nanoNodeUrl string
@@ -52,8 +52,8 @@ var nanoNodeUrl string
 func Start(nanoNodeUrl1 string, listenIpPort string, maxActiveHandlerCountIn int) {
 	maxActiveHandlerCount = maxActiveHandlerCountIn
 	nanoNodeUrl = nanoNodeUrl1
-    http.HandleFunc("/", handleRequest)
+	http.HandleFunc("/", handleRequest)
 
 	log.Println("Starting listening on", listenIpPort, "...")
-    http.ListenAndServe(listenIpPort, nil)
+	http.ListenAndServe(listenIpPort, nil)
 }
