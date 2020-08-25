@@ -140,7 +140,7 @@ func getWorkFromCache(req WorkRequest) (bool, bool, WorkResponse) {
 func getCachedWork(req WorkRequest) (WorkResponse, bool) {
 	// Fill difficuly if missing
 	if req.Diff == 0 {
-		req.Diff = GetDefaultDifficulty()
+		req.Diff = rpcclient.GetDifficultyCached(req.Url)
 	}
 	// get from cache
 	found, inprogress, respFromCache := getWorkFromCache(req)
@@ -212,11 +212,6 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	statusWorkOutDurationTotal += duration.Milliseconds()
 	log.Printf("Work resp from node, added to cache; dur %v, req %v, resp %v, \n", duration, req, resp)
 	return WorkResponse{resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh", nil}
-}
-
-// get default difficulty -- TODO should come from RPC, cached
-func GetDefaultDifficulty() uint64 {
-	return 0xffffffc000000000
 }
 
 func GetFrontierHash(url string, account string) (string, error) {
