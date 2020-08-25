@@ -14,6 +14,32 @@ import (
 	"time"
 )
 
+type (
+	WorkResponse struct {
+		Hash       string
+		Work       string
+		Difficulty uint64
+		Multiplier float64
+	}
+
+	WorkResponseJson struct {
+		Hash       string
+		Work       string
+		Difficulty string
+		Multiplier string
+	}
+
+	AccountFrontiersRespJson struct {
+		Frontiers map[string]string
+	}
+
+	ActiveDifficultyRespJson struct {
+		NetworkMinimum string `json:"network_minimum"`
+		NetworkCurrent string `json:"network_current"`
+		Multiplier     string
+	}
+)
+
 func RpcCall(url string, reqJson string) (respJson string, err error) {
 	req, err := http.NewRequest("POST", url, bytes.NewBufferString(reqJson))
 	if err != nil {
@@ -31,20 +57,6 @@ func RpcCall(url string, reqJson string) (respJson string, err error) {
 		return "", err
 	}
 	return string(body), nil
-}
-
-type WorkResponse struct {
-	Hash       string
-	Work       string
-	Difficulty uint64
-	Multiplier float64
-}
-
-type WorkResponseJson struct {
-	Hash       string
-	Work       string
-	Difficulty string
-	Multiplier string
 }
 
 // work_generate.  Difficulty may be missing (0)
@@ -81,10 +93,6 @@ func GetWork(url string, hash string, diff uint64) (WorkResponse, error, time.Du
 	return resp, nil, timeStop.Sub(timeStart)
 }
 
-type AccountFrontiersRespJson struct {
-	Frontiers map[string]string
-}
-
 // Get frontier blocks for accounts, accounts_frontiers
 func GetFrontiers(url string, accounts []string) (map[string]string, error) {
 	reqJson := `{"action":"accounts_frontiers","accounts":["` + strings.Join(accounts[:], `","`) + `"]}`
@@ -102,6 +110,24 @@ func GetFrontiers(url string, accounts []string) (map[string]string, error) {
 	}
 	//fmt.Println(respStruct1)
 	return respStruct1.Frontiers, nil
+}
+
+// GetDifficulty Get current level of difficulty
+func GetDifficulty(url string) (string, error) {
+	reqJson := `{"action": "active_difficulty"}`
+	respString, err := RpcCall(url, reqJson)
+	//fmt.Println("reqJson %v respString %v \n", reqJson, respString)
+	if err != nil {
+		return "", err
+	}
+	// parse json
+	var respStruct1 ActiveDifficultyRespJson
+	err = json.Unmarshal([]byte(respString), &respStruct1)
+	if err != nil {
+		return "", err
+	}
+	//fmt.Println(respStruct1)
+	return respStruct1.NetworkCurrent, nil
 }
 
 // Get frontier block for an account, using accounts_frontiers

@@ -78,7 +78,7 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 			return
 		}
 		log.Println("work_generate req", workGenerate)
-		var difficulty uint64 = workcache.GetDefaultDifficulty()
+		var difficulty uint64 = rpcclient.GetDifficultyCached(nanoNodeUrl)
 		if len(workGenerate.Difficulty) > 0 {
 			difficultyParsed, err := strconv.ParseUint(workGenerate.Difficulty, 16, 64)
 			if err != nil {
