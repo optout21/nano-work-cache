@@ -74,6 +74,10 @@ func ConfigNodeRpc() string {
 	return ConfigGetString("Main.NodeRpc")
 }
 
+func ConfigNodeRpcWork() string {
+	return ConfigGetString("Main.NodeRpcWork")
+}
+
 func ConfigListenIpPort() string {
 	return ConfigGetStringWithDefault("Main.ListenIpPort", ":7176")
 }

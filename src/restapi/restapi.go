@@ -49,11 +49,14 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-var nanoNodeUrl string
+var nodeRpcUrl string
+var nodeRpcWorkUrl string
 
-func Start(nanoNodeUrl1 string, listenIpPort string) {
+func Start() {
+	nodeRpcUrl = workcache.ConfigNodeRpc()
+	nodeRpcWorkUrl = workcache.ConfigNodeRpcWork()
+	listenIpPort := workcache.ConfigListenIpPort()
 	maxActiveRequests = workcache.ConfigRestMaxActiveRequests()
-	nanoNodeUrl = nanoNodeUrl1
 	enablePregeneration = workcache.ConfigEnablePregeneration()
 
 	http.HandleFunc("/", handleRequest)

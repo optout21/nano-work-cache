@@ -27,16 +27,16 @@ func main() {
 	if len(rpcUrl) == 0 {
 		panic("No value configured for Main.NodeRpc")
 	}
-	fmt.Printf("  NodeRpc  %v \n", rpcUrl)
-	listenIpPort := workcache.ConfigListenIpPort()
+	fmt.Printf("  NodeRpc          %v \n", rpcUrl)
+	fmt.Printf("  NodeRpcWork      %v \n", workcache.ConfigNodeRpcWork())
+	fmt.Printf("  ListenIpPort     %v \n", workcache.ConfigListenIpPort())
 	fmt.Printf("  RestMaxActiveRequests  %v \n", workcache.ConfigRestMaxActiveRequests())
 	fmt.Printf("  BackgroundWorkerCount  %v \n", workcache.ConfigBackgroundWorkerCount())
-	fmt.Printf("  MaxOutRequests  %v \n", workcache.ConfigMaxOutRequests())
+	fmt.Printf("  MaxOutRequests   %v \n", workcache.ConfigMaxOutRequests())
 	fmt.Printf("  EnablePregeneration  %v \n", workcache.ConfigEnablePregeneration())
 	fmt.Printf("  PregenerationQueueSize  %v \n", workcache.ConfigPregenerationQueueSize())
 	fmt.Printf("  MaxCacheAgeDays  %v \n", workcache.ConfigMaxCacheAgeDays())
 
 	workcache.Start()
-
-	restapi.Start(rpcUrl, listenIpPort)
+	restapi.Start()
 }
