@@ -59,7 +59,7 @@ func workResponseToJson(resp workcache.WorkResponse) string {
 
 /// Proxy an incoming call to the node unmodified
 func proxyCall(url string, action string, req string) (string, error) {
-	log.Println("transaprent proxying of action", action)
+	log.Println("transparent proxying of action", action)
 	respJSON, err := rpcclient.MakeGenericCall(url, req)
 	if err != nil {
 		log.Println("RPC error:", err.Error())

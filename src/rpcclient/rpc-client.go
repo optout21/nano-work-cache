@@ -64,9 +64,10 @@ func GetWork(url string, hash string, diff uint64) (WorkResponse, error, time.Du
 	//// HARDOCDED url
 	urlOld := url
 	url = "http://ec2-18-209-152-139.compute-1.amazonaws.com:7076"
-	fmt.Printf("Using hardocded URL %v instead of %v", url, urlOld)
+	fmt.Printf("Using HARDOCDED URL %v instead of %v \n", url, urlOld)
 	timeStart := time.Now()
-	reqJson := fmt.Sprintf(`{"action":"work_generate","hash":"%v","use_peers":"true"`, hash)
+	reqJson := fmt.Sprintf(`{"action":"work_generate","hash":"%v"`, hash)
+	reqJson += `,"use_peers":"true"`
 	if diff != 0 {
 		reqJson += fmt.Sprintf(`,"difficulty":"%x"`, diff)
 	}
