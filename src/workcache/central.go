@@ -17,7 +17,6 @@ const (
 )
 
 type WorkRequest struct {
-	Url     string
 	Input   int // WorkInputHash or Account
 	Hash    string
 	Diff    uint64
@@ -58,8 +57,8 @@ func Start() {
 // Generate Generate work or take from cache. Generation done in foreground.
 // Account is optional, may by empty.
 // Difficulty may be 0, default will be used
-func Generate(url string, hash string, difficulty uint64, account string) (WorkResponse, error) {
-	req := WorkRequest{url, WorkInputHash, hash, difficulty, account}
+func Generate(hash string, difficulty uint64, account string) (WorkResponse, error) {
+	req := WorkRequest{WorkInputHash, hash, difficulty, account}
 	resp, fromcache := getCachedWork(req)
 	statusWorkInReqCount++
 	if fromcache {
@@ -74,14 +73,14 @@ func Generate(url string, hash string, difficulty uint64, account string) (WorkR
 // PregenerateByHash Enqueue a pregeneration request, by hash
 // Account is optional, may by empty.
 // Default difficulty will be used
-func PregenerateByHash(url string, hash string, account string) {
-	addPregenerateRequest(WorkRequest{url, WorkInputHash, hash, 0, account})
+func PregenerateByHash(hash string, account string) {
+	addPregenerateRequest(WorkRequest{WorkInputHash, hash, 0, account})
 }
 
 // PregenerateByAccount Enqueue a pregeneration request, by account
 // Default difficulty will be used
-func PregenerateByAccount(url string, account string) {
-	addPregenerateRequest(WorkRequest{url, WorkInputAccount, "", 0, account})
+func PregenerateByAccount(account string) {
+	addPregenerateRequest(WorkRequest{WorkInputAccount, "", 0, account})
 }
 
 func waitForCacheResult(req WorkRequest) (WorkResponse, error) {
@@ -142,7 +141,7 @@ func getWorkFromCache(req WorkRequest) (bool, bool, WorkResponse) {
 func getCachedWork(req WorkRequest) (WorkResponse, bool) {
 	// Fill difficuly if missing
 	if req.Diff == 0 {
-		req.Diff = rpcclient.GetDifficultyCached(req.Url)
+		req.Diff = rpcclient.GetDifficultyCached()
 	}
 	// get from cache
 	found, inprogress, respFromCache := getWorkFromCache(req)
@@ -169,7 +168,7 @@ func getCachedWork(req WorkRequest) (WorkResponse, bool) {
 // If input is account, get frontier first
 func getCachedWorkByAccountOrHash(req WorkRequest) WorkResponse {
 	if req.Input == WorkInputAccount {
-		hash, err := GetFrontierHash(req.Url, req.Account)
+		hash, err := GetFrontierHash(req.Account)
 		if err != nil {
 			return WorkResponse{Error: err}
 		}
@@ -200,7 +199,7 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	log.Printf("Requesting work from node, reqCount %v  hash %v \n", activeWorkOutReqCount, req.Hash)
 	// trigger work
 	timeComputed := time.Now().Unix()
-	resp, err, duration := rpcclient.GetWork(req.Url, req.Hash, req.Diff)
+	resp, err, duration := rpcclient.GetWork(req.Hash, req.Diff)
 	if err != nil {
 		return WorkResponse{Error: err}
 	}
@@ -216,9 +215,9 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	return WorkResponse{resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, "fresh", nil}
 }
 
-func GetFrontierHash(url string, account string) (string, error) {
+func GetFrontierHash(account string) (string, error) {
 	// get frontier of account
-	hash, err := rpcclient.GetFrontier(url, account)
+	hash, err := rpcclient.GetFrontier(account)
 	if err != nil {
 		return "", errors.New("Could not obtain frontier block for account " + account + ", " + err.Error())
 	}
