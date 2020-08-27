@@ -67,6 +67,10 @@ func getWork(hash string) (bool, time.Duration) {
 		log.Printf("Work resp from node FAIL, dur %v, err %v \n", duration, err)
 		return false, duration
 	}
+	if len(resp.Work) < 10 {
+		log.Printf("Work resp has invalid work, work %v, dur %v, resp %v \n", resp.Work, duration, resp)
+		return false, duration
+	}
 	log.Printf("Work resp from node ok, dur %v, resp %v \n", duration, resp)
 	return true, duration
 }
