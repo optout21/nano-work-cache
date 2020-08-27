@@ -9,7 +9,7 @@ import (
 )
 
 var activeHandlerCount int = 0
-var maxActiveHandlerCount int = 5000
+var maxActiveRequests int = 500
 
 // ActiveHandlerCount Return current number of conccurrent active handlers
 func ActiveHandlerCount() int { return activeHandlerCount }
@@ -27,9 +27,9 @@ func decActiveCount() int {
 func handleReqWithRateLimit(action string, respBody []byte, w http.ResponseWriter) {
 	defer decActiveCount()
 	incActiveCount()
-	if activeHandlerCount >= maxActiveHandlerCount {
+	if activeHandlerCount >= maxActiveRequests {
 		// overload, return error right away
-		log.Printf("Overload, %v active request handlers, max %v\n", activeHandlerCount, maxActiveHandlerCount)
+		log.Printf("Overload, %v active request handlers, max %v\n", activeHandlerCount, maxActiveRequests)
 		fmt.Fprintln(w, fmt.Sprintf(`{"error":"overload, too many concurrent active requests"}`))
 		return
 	}

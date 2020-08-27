@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/catenocrypt/nano-work-cache/workcache"
 )
 
 type actionJson struct {
@@ -49,9 +51,11 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 
 var nanoNodeUrl string
 
-func Start(nanoNodeUrl1 string, listenIpPort string, maxActiveHandlerCountIn int) {
-	maxActiveHandlerCount = maxActiveHandlerCountIn
+func Start(nanoNodeUrl1 string, listenIpPort string) {
+	maxActiveRequests = workcache.ConfigRestMaxActiveRequests()
 	nanoNodeUrl = nanoNodeUrl1
+	enablePregeneration = workcache.ConfigEnablePregeneration()
+
 	http.HandleFunc("/", handleRequest)
 
 	log.Println("Starting listening on", listenIpPort, "...")

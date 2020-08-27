@@ -45,9 +45,10 @@ var statusWorkInReqError int = 0
 
 // Start Invoked at the beginning, can perform initializations, read the cache, etc.
 func Start() {
-	backgroundWorkerCount := GetBackgroundWorkerCount()
-	maxOutRequests = GetMaxOutRequests()
-	maxCacheAgeDays = GetMaxCacheAgeDays()
+	backgroundWorkerCount := ConfigBackgroundWorkerCount()
+	maxOutRequests = ConfigMaxOutRequests()
+	maxCacheAgeDays = ConfigMaxCacheAgeDays()
+	InitQueue()
 	LoadCache()
 	RemoveOldEntries(float64(maxCacheAgeDays))
 	startWorkers(backgroundWorkerCount)
