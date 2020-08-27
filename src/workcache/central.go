@@ -87,7 +87,23 @@ func PregenerateByHash(hash string, account string) {
 // PregenerateByAccount Enqueue a pregeneration request, by account
 // Default difficulty will be used
 func PregenerateByAccount(account string) {
-	addPregenerateRequest(WorkRequest{WorkInputAccount, "", 0, account})
+	req := WorkRequest{WorkInputAccount, "", 0, account}
+	// check if frontier hash has work in cache
+	// get frontier of account
+	hash, err := GetFrontierHash(account)
+	if err != nil {
+		// could not get frontier, add it as fallback
+		addPregenerateRequest(req)
+		return
+	}
+	// check in cache
+	found, _, _ := getWorkFromCache(WorkRequest{WorkInputHash, hash, 0, account})
+	if found {
+		// found in cache, no need to compute
+		return
+	}
+	// not found, add pregenerate request, but by account
+	addPregenerateRequest(req)
 }
 
 func waitForCacheResult(req WorkRequest) (WorkResponse, error) {
