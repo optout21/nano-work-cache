@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -48,8 +49,8 @@ func Init(rpcUrlIn string, rpcWorkUrlIn string) {
 	rpcWorkUrl = rpcWorkUrlIn
 }
 
-func RpcCall(reqJson string) (respJson string, err error) {
-	req, err := http.NewRequest("POST", rpcUrl, bytes.NewBufferString(reqJson))
+func RpcCall(url string, reqJson string) (respJson string, err error) {
+	req, err := http.NewRequest("POST", url, bytes.NewBufferString(reqJson))
 	if err != nil {
 		return "", err
 	}
@@ -71,11 +72,13 @@ func RpcCall(reqJson string) (respJson string, err error) {
 func GetWork(hash string, diff uint64) (WorkResponse, error, time.Duration) {
 	timeStart := time.Now()
 	reqJson := fmt.Sprintf(`{"action":"work_generate","hash":"%v"`, hash)
+	reqJson += `,"use_peers":"true"`
 	if diff != 0 {
 		reqJson += fmt.Sprintf(`,"difficulty":"%x"`, diff)
 	}
 	reqJson += `}`
-	respString, err := RpcCall(reqJson)
+	log.Printf("Requesting work, from %v, %v \n", rpcWorkUrl, reqJson)
+	respString, err := RpcCall(rpcWorkUrl, reqJson)
 	var resp WorkResponse
 	if err != nil {
 		return resp, err, 0
@@ -105,7 +108,7 @@ func GetWork(hash string, diff uint64) (WorkResponse, error, time.Duration) {
 func GetFrontiers(accounts []string) (map[string]string, error) {
 	reqJson := `{"action":"accounts_frontiers","accounts":["` + strings.Join(accounts[:], `","`) + `"]}`
 	//fmt.Println(reqJson)
-	respString, err := RpcCall(reqJson)
+	respString, err := RpcCall(rpcUrl, reqJson)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +126,7 @@ func GetFrontiers(accounts []string) (map[string]string, error) {
 // GetDifficulty Get current level of difficulty
 func GetDifficulty() (string, error) {
 	reqJson := `{"action": "active_difficulty"}`
-	respString, err := RpcCall(reqJson)
+	respString, err := RpcCall(rpcUrl, reqJson)
 	//fmt.Println("reqJson %v respString %v \n", reqJson, respString)
 	if err != nil {
 		return "", err
@@ -154,7 +157,7 @@ func GetFrontier(account string) (string, error) {
 /// Make a generic call to the RPC node
 func MakeGenericCall(reqJSON string) (string, error) {
 	//fmt.Println(reqJson)
-	respString, err := RpcCall(reqJSON)
+	respString, err := RpcCall(rpcUrl, reqJSON)
 	if err != nil {
 		return "", err
 	}
