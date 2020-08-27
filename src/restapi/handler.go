@@ -51,7 +51,7 @@ type responseWithHashJson struct {
 	Hash string
 }
 
-var enablePregeneration int = workcache.EnablePregeneration()
+var enablePregeneration int = workcache.GetEnablePregeneration()
 
 /// Not the normal Json Encode way, due to the difficulty hex formatting.  Using simple string concatenation.
 func workResponseToJson(resp workcache.WorkResponse) string {
