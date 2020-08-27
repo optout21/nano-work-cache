@@ -74,7 +74,14 @@ func Generate(hash string, difficulty uint64, account string) (WorkResponse, err
 // Account is optional, may by empty.
 // Default difficulty will be used
 func PregenerateByHash(hash string, account string) {
-	addPregenerateRequest(WorkRequest{WorkInputHash, hash, 0, account})
+	req := WorkRequest{WorkInputHash, hash, 0, account}
+	// check in cache
+	found, _, _ := getWorkFromCache(req)
+	if found {
+		// found in cache, no need to compute
+		return
+	}
+	addPregenerateRequest(req)
 }
 
 // PregenerateByAccount Enqueue a pregeneration request, by account

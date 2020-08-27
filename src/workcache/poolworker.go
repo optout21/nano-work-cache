@@ -18,12 +18,6 @@ func InitQueue() {
 }
 
 func addPregenerateRequest(req WorkRequest) {
-	// check in cache
-	found, _, _ := getWorkFromCache(req)
-	if found {
-		// found in cache, no need to compute
-		return
-	}
 	if len(pregenerateJobs) >= pregenerateJobsMaxSize-2 {
 		// queue is full, do not put any more (to avoid blocking)
 		log.Printf("WARNING: Pregeneration queue is full, not enqueuing any more, %v\n", len(pregenerateJobs))
