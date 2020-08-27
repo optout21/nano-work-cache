@@ -13,7 +13,7 @@ var diffTime time.Time = time.Now().Add(-100 * time.Hour)
 const cacheExpiry time.Duration = 10 * time.Minute
 
 // GetDifficultyCached Get the current network difficulty, comes from RPC, cached for some minutes
-func GetDifficultyCached(url string) uint64 {
+func GetDifficultyCached() uint64 {
 	now := time.Now()
 	age := now.Sub(diffTime)
 	//fmt.Printf("diff %v age %v \n", difficulty, age)
@@ -21,7 +21,7 @@ func GetDifficultyCached(url string) uint64 {
 		// valid and fresh, return cached
 		return difficulty
 	}
-	diffRpc, err := GetDifficulty(url)
+	diffRpc, err := GetDifficulty()
 	if err != nil {
 		return difficulty
 	}

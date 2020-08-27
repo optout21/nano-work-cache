@@ -49,12 +49,7 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-var nodeRpcUrl string
-var nodeRpcWorkUrl string
-
 func Start() {
-	nodeRpcUrl = workcache.ConfigNodeRpc()
-	nodeRpcWorkUrl = workcache.ConfigNodeRpcWork()
 	listenIpPort := workcache.ConfigListenIpPort()
 	maxActiveRequests = workcache.ConfigRestMaxActiveRequests()
 	enablePregeneration = workcache.ConfigEnablePregeneration()
