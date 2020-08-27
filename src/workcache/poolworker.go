@@ -27,6 +27,7 @@ func addPregenerateRequest(req WorkRequest) {
 	if len(pregenerateJobs) >= pregenerateJobsMaxSize-2 {
 		// queue is full, do not put any more (to avoid blocking)
 		log.Printf("WARNING: Pregeneration queue is full, not enqueuing any more, %v\n", len(pregenerateJobs))
+		return
 	}
 	pregenerateJobs <- req
 }
