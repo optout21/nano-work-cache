@@ -35,8 +35,11 @@ func doProcess(name int) {
 		select {
 		case preJob := <-pregenerateJobs:
 			//log.Printf("Worker %v : pregenerate job", name)
-			getCachedWorkByAccountOrHash(preJob)
-
+			resp := getCachedWorkByAccountOrHash(preJob)
+			if resp.Error != nil {
+				log.Printf("WARNING: Could not process request, sleeping to slow queue, %v \n", resp.Error)
+				time.Sleep(20 * time.Second)
+			}
 		case <-ticker.C:
 			// timeout, idle loop
 		}
