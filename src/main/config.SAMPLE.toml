@@ -11,6 +11,7 @@ CachePeristFileName = ""
 
 # HTTP API Rate limit: max concurrent outstanding requests.  If reached, overload error messages are returned.
 # Background-running work requests are counted in here, they are limited differently
+# Range: 20 - 10000, default 500
 RestMaxActiveRequests = 500
 
 # BackgroundWorkerCount: number of background worker threads, and also maximum number of outgoing requests from pregenerations
@@ -20,6 +21,14 @@ BackgroundWorkerCount = 4
 # MaxOutRequests: number of concurrent outgoing work request (both from generation and pregeneration).
 # Range: 3 - 30, default 8, but must be at least 1 larger than BackgroundWorkerCount
 MaxOutRequests = 8
+
+# EnablePregeneration: enable pregeneration -- computing of work in advance when e.g. balance is retrieved
+# Range: 0 or 1, default 1
+EnablePregeneration = 1
+
+# PregenerationQueueSize: maximum size of queue for pregenerate requests
+# Range: 0 - 100000, default 10000
+PregenerationQueueSize = 10000
 
 # MaxCacheAgeDays: age limit on old cache entries for cache aging.  0 means no cache aging.
 # Dafault: 30 (days)
