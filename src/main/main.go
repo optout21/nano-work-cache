@@ -22,22 +22,21 @@ func main() {
 		workcache.SetConfigFile(os.Args[1])
 	}
 
-	rpcUrl := workcache.GetNodeRpc()
+	fmt.Printf("Config: \n")
+	rpcUrl := workcache.ConfigNodeRpc()
 	if len(rpcUrl) == 0 {
 		panic("No value configured for Main.NodeRpc")
 	}
-	fmt.Printf("Config: NodeRpc  %v \n", rpcUrl)
-	listenIpPort := workcache.GetListenIpPort()
-	fmt.Printf("Config: ListenIpPort  %v \n", listenIpPort)
-	restMaxActiveRequests := workcache.GetRestMaxActiveRequests()
-	fmt.Printf("Config: RestMaxActiveRequests  %v \n", restMaxActiveRequests)
-	fmt.Printf("Config: BackgroundWorkerCount  %v \n", workcache.GetBackgroundWorkerCount())
-	fmt.Printf("Config: MaxOutRequests  %v \n", workcache.GetMaxOutRequests())
-	fmt.Printf("Config: EnablePregeneration  %v \n", workcache.GetEnablePregeneration())
-	fmt.Printf("Config: PregenerationQueueSize  %v \n", workcache.GetPregenerationQueueSize())
-	fmt.Printf("Config: MaxCacheAgeDays  %v \n", workcache.GetMaxCacheAgeDays())
+	fmt.Printf("  NodeRpc  %v \n", rpcUrl)
+	listenIpPort := workcache.ConfigListenIpPort()
+	fmt.Printf("  RestMaxActiveRequests  %v \n", workcache.ConfigRestMaxActiveRequests())
+	fmt.Printf("  BackgroundWorkerCount  %v \n", workcache.ConfigBackgroundWorkerCount())
+	fmt.Printf("  MaxOutRequests  %v \n", workcache.ConfigMaxOutRequests())
+	fmt.Printf("  EnablePregeneration  %v \n", workcache.ConfigEnablePregeneration())
+	fmt.Printf("  PregenerationQueueSize  %v \n", workcache.ConfigPregenerationQueueSize())
+	fmt.Printf("  MaxCacheAgeDays  %v \n", workcache.ConfigMaxCacheAgeDays())
 
 	workcache.Start()
 
-	restapi.Start(rpcUrl, listenIpPort, restMaxActiveRequests)
+	restapi.Start(rpcUrl, listenIpPort)
 }

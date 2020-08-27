@@ -70,47 +70,47 @@ func ConfigGetIntWithDefault(keyName string, defaultVal int) int {
 	return int(val)
 }
 
-func GetNodeRpc() string {
+func ConfigNodeRpc() string {
 	return ConfigGetString("Main.NodeRpc")
 }
 
-func GetListenIpPort() string {
+func ConfigListenIpPort() string {
 	return ConfigGetStringWithDefault("Main.ListenIpPort", ":7176")
 }
 
-func GetRestMaxActiveRequests() int {
+func ConfigRestMaxActiveRequests() int {
 	val := ConfigGetIntWithDefault("Main.RestMaxActiveRequests", 500)
 	val = int(math.Max(float64(val), float64(20)))
 	return val
 }
 
-func GetBackgroundWorkerCount() int {
+func ConfigBackgroundWorkerCount() int {
 	val := ConfigGetIntWithDefault("Main.BackgroundWorkerCount", 4)
 	val = int(math.Max(float64(val), float64(2)))
 	val = int(math.Min(float64(val), float64(20)))
 	return val
 }
 
-func GetMaxOutRequests() int {
+func ConfigMaxOutRequests() int {
 	val := ConfigGetIntWithDefault("Main.MaxOutRequests", 8)
 	val = int(math.Max(float64(val), float64(3)))
 	val = int(math.Min(float64(val), float64(30)))
-	backgroundWorkerCount := GetBackgroundWorkerCount()
+	backgroundWorkerCount := ConfigBackgroundWorkerCount()
 	val = int(math.Max(float64(val), float64(backgroundWorkerCount+1)))
 	return val
 }
 
-func GetEnablePregeneration() int {
+func ConfigEnablePregeneration() int {
 	return ConfigGetIntWithDefault("Main.EnablePregeneration", 1)
 }
 
-func GetPregenerationQueueSize() int {
+func ConfigPregenerationQueueSize() int {
 	val := ConfigGetIntWithDefault("Main.PregenerationQueueSize", 10000)
 	val = int(math.Max(float64(val), float64(0)))
 	val = int(math.Min(float64(val), float64(100000)))
 	return val
 }
 
-func GetMaxCacheAgeDays() int {
+func ConfigMaxCacheAgeDays() int {
 	return ConfigGetIntWithDefault("Main.MaxCacheAgeDays", 30)
 }
