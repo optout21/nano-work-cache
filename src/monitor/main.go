@@ -13,7 +13,8 @@ import (
 	"github.com/catenocrypt/nano-work-cache/rpcclient"
 )
 
-const MonitorFreq int = 150     // sec
+const nodeUrl = "https://nano-rpc.trustwalletapp.com"
+const MonitorFreq int = 300     // sec
 const TimeFromBalanceToWork = 6 // sec
 
 type Stats struct {
@@ -57,13 +58,11 @@ func (s *CumulStats) ToString() string {
 		float32(s.DurationTotal.Milliseconds())/float32(s.Count))
 }
 
-const nodeUrl = "https://nano-rpc.trustwalletapp.com"
-
 // Return success, duration
 func getWork(hash string) (bool, time.Duration) {
 	log.Printf("Requesting work from node, hash %v \n", hash)
 	// trigger work
-	resp, err, duration := rpcclient.GetWork(nodeUrl, hash, 0)
+	resp, err, duration := rpcclient.GetWork(hash, 0)
 	if err != nil {
 		log.Printf("Work resp from node FAIL, dur %v, err %v \n", duration, err)
 		return false, duration
@@ -76,7 +75,7 @@ func pregenerate(hash string) {
 	action := "work_pregenerate_by_hash"
 	body := "{\"action\":\"" + action + "\", \"hash\": \"" + hash + "\"}"
 	log.Printf("Pregenerating for hash %v \n", hash)
-	rpcclient.MakeGenericCall(nodeUrl, body)
+	rpcclient.MakeGenericCall(body)
 }
 
 // Do a simulated account cycle:
@@ -130,6 +129,8 @@ func getRandomHash() string {
 }
 
 func main() {
+	rpcclient.Init(nodeUrl, nodeUrl)
+
 	nextCheck := time.Now()
 	var cumulative CumulStats = CumulStats{}
 	rand.Seed(time.Now().UTC().UnixNano())
