@@ -51,7 +51,9 @@ type responseWithHashJson struct {
 	Hash string
 }
 
-/// Not the normal Json Encode way, due to the difficult hex formatting.  Using simple string concatenation.
+var enablePregeneration int = workcache.EnablePregeneration()
+
+/// Not the normal Json Encode way, due to the difficulty hex formatting.  Using simple string concatenation.
 func workResponseToJson(resp workcache.WorkResponse) string {
 	return fmt.Sprintf(`{"hash":"%v","work":"%v","difficulty":"%x","multiplier":"%v","source":"%v"}`,
 		resp.Hash, resp.Work, resp.Difficulty, resp.Multiplier, resp.Source)
@@ -107,7 +109,7 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 		}
 		log.Println("work_pregenerate_by_hash req", workPregenerateByHash)
 		var hash = workPregenerateByHash.Hash
-		// start pregenerate asynchronously
+		// start pregenerate asynchronously, regardless of enable flag
 		workcache.PregenerateByHash(nanoNodeUrl, hash, "")
 		// return response, only hash
 		fmt.Fprintln(w, fmt.Sprintf(`{"hash":"%v","source":"started_in_background"}`, hash))
@@ -128,7 +130,7 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 			fmt.Fprintln(w, fmt.Sprintf(`{"error":"%v"}`, err.Error()))
 			return
 		}
-		// pregenerate work asynchronously
+		// pregenerate work asynchronously, regardless of enable flag
 		workcache.PregenerateByHash(nanoNodeUrl, hash, account)
 		// return response; account is echoed back; hash is returned; work is not available yet
 		fmt.Fprintln(w, fmt.Sprintf(`{"account":"%v","hash":"%v","source":"started_in_background"}`, account, hash))
@@ -142,10 +144,12 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 			fmt.Fprintln(w, `{"error":"account_balance parse error"}`)
 			return
 		}
-		log.Println("account_balance", accountBalance)
+		//log.Println("account_balance", accountBalance)
 
-		// get frontier and pregenerate work asynchronously
-		workcache.PregenerateByAccount(nanoNodeUrl, accountBalance.Account)
+		if enablePregeneration >= 1 {
+			// get frontier and pregenerate work asynchronously
+			workcache.PregenerateByAccount(nanoNodeUrl, accountBalance.Account)
+		}
 
 		// proxy the call
 		respJSON, err := proxyCall(nanoNodeUrl, action, string(reqBody))
@@ -164,11 +168,13 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 			fmt.Fprintln(w, `{"error":"accounts_balances parse error"}`)
 			return
 		}
-		log.Println("accounts_balances", accountsBalances)
+		//log.Println("accounts_balances", accountsBalances)
 
-		// for all accounts get frontier and pregenerate work asynchronously
-		for _, account := range accountsBalances.Accounts {
-			workcache.PregenerateByAccount(nanoNodeUrl, account)
+		if enablePregeneration >= 1 {
+			// for all accounts get frontier and pregenerate work asynchronously
+			for _, account := range accountsBalances.Accounts {
+				workcache.PregenerateByAccount(nanoNodeUrl, account)
+			}
 		}
 
 		// proxy the call
@@ -210,11 +216,13 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 		if err != nil {
 			log.Println("Warning: Error reading hash from response of" + action)
 		} else {
-			// we have the hash, trigger work computation
-			hash := responseWithHash.Hash
-			if len(hash) > 0 {
-				log.Println("Reqesting work from action", action, "for hash", hash, "and account", account)
-				workcache.PregenerateByHash(nanoNodeUrl, hash, account)
+			if enablePregeneration >= 1 {
+				// we have the hash, trigger work computation
+				hash := responseWithHash.Hash
+				if len(hash) > 0 {
+					log.Println("Reqesting work from action", action, "for hash", hash, "and account", account)
+					workcache.PregenerateByHash(nanoNodeUrl, hash, account)
+				}
 			}
 		}
 		fmt.Fprintln(w, respJSON)

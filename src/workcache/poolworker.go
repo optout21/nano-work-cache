@@ -9,7 +9,7 @@ import (
 )
 
 // Background generate jobs, with low priority.  Size is large, fixed.
-var pregenerateJobsMaxSize int = 10000
+var pregenerateJobsMaxSize int = PregenerationQueueSize()
 var pregenerateJobs chan WorkRequest = make(chan WorkRequest, pregenerateJobsMaxSize)
 
 func addPregenerateRequest(req WorkRequest) {

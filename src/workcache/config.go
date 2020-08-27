@@ -5,6 +5,7 @@ package workcache
 import (
 	"fmt"
 	"log"
+	"math"
 	"strconv"
 
 	"github.com/spf13/viper"
@@ -29,6 +30,8 @@ func readConfigIfNeeded() {
 	viper.SetDefault("Main.RestMaxActiveRequests", 200)
 	viper.SetDefault("Main.BackgroundWorkerCount", 4)
 	viper.SetDefault("Main.MaxOutRequests", 8)
+	viper.SetDefault("Main.EnablePregeneration", 1)
+	viper.SetDefault("Main.PregenerationQueueSize", 10000)
 	viper.SetDefault("Main.MaxCacheAgeDays", 30)
 
 	// read config file
@@ -56,4 +59,15 @@ func ConfigGetIntWithDefault(keyName string, defaultVal int) int {
 		return defaultVal
 	}
 	return int(val)
+}
+
+func EnablePregeneration() int {
+	return ConfigGetIntWithDefault("Main.EnablePregeneration", 1)
+}
+
+func PregenerationQueueSize() int {
+	val := ConfigGetIntWithDefault("Main.PregenerationQueueSize", 10000)
+	val = int(math.Max(float64(val), float64(0)))
+	val = int(math.Min(float64(val), float64(100000)))
+	return val
 }

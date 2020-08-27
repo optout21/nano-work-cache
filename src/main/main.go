@@ -42,6 +42,9 @@ func main() {
 	maxOutRequests = int(math.Min(float64(maxOutRequests), float64(30)))
 	maxOutRequests = int(math.Max(float64(maxOutRequests), float64(backgroundWorkerCount+1)))
 	fmt.Printf("Config: MaxOutRequests  %v \n", maxOutRequests)
+	enablePregeneration := workcache.EnablePregeneration()
+	fmt.Printf("Config: EnablePregeneration  %v \n", enablePregeneration)
+	fmt.Printf("Config: PregenerationQueueSize  %v \n", workcache.PregenerationQueueSize())
 	maxCacheAgeDays := workcache.ConfigGetIntWithDefault("Main.MaxCacheAgeDays", 30)
 	fmt.Printf("Config: MaxCacheAgeDays  %v \n", maxCacheAgeDays)
 
