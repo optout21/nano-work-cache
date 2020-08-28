@@ -30,7 +30,7 @@ func getStatus() string {
 	activeWorkOutReqCount := workcache.StatusActiveWorkOutReqCount()
 	pregenerQueSize := workcache.StatusPregenerQueueSize()
 	uptime := time.Now().Sub(startTime)
-	return fmt.Sprintf(`{"cache_size": %v, "work_in_req_count": %v, "work_in_req_from_cache": %v, "work_in_req_error": %v, "work_in_req_cache_ratio": %v, "work_out_req_count": %v, "work_out_resp_count": %v, "work_out_dur_avg": %v, "active_handler_count": %v, "active_work_out_req_count": %v, "pregenr_que_size": %v, "diff": "%v", "hrs", %v}`,
+	return fmt.Sprintf(`{"cache_size": %v, "work_in_req_count": %v, "work_in_req_from_cache": %v, "work_in_req_error": %v, "work_in_req_cache_ratio": %v, "work_out_req_count": %v, "work_out_resp_count": %v, "work_out_dur_avg": %v, "active_handler_count": %v, "active_work_out_req_count": %v, "pregenr_que_size": %v, "diff": "%v", "hrs": %v}`,
 		cacheSize, workInReqCount, workInReqFromCache, workInReqError, workInReqCacheRatio, workOutReqCount, workOutRespCount, workOutDurAvg, activeHandlerCount, activeWorkOutReqCount, pregenerQueSize,
 		strconv.FormatUint(rpcclient.GetDifficultyCached(), 16), uptime.Hours())
 }
