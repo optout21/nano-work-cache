@@ -5,6 +5,7 @@ package workcache
 import (
 	//"fmt"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -33,7 +34,7 @@ type WorkResponse struct {
 	Error  error
 }
 
-var maxOutRequests int = 8
+var maxOutRequests int = 0
 var maxCacheAgeDays int = 0
 var statusWorkOutReqCount int = 0
 var statusWorkOutRespCount int = 0
@@ -212,9 +213,11 @@ func getWorkFreshSync(req WorkRequest) WorkResponse {
 	defer decActiveWorkOutReqCount()
 
 	statusWorkOutReqCount++
-	if activeWorkOutReqCount >= maxOutRequests {
-		// too many work requests
-		return WorkResponse{Error: errors.New("Overload: too many active outgoing work requests")}
+	if maxOutRequests > 0 {
+		if activeWorkOutReqCount >= maxOutRequests {
+			// too many work requests
+			return WorkResponse{Error: fmt.Errorf("Overload: too many active outgoing work requests %v %v", activeWorkOutReqCount, maxOutRequests)}
+		}
 	}
 
 	// mark start in cache

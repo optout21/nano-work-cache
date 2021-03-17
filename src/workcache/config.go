@@ -29,7 +29,7 @@ func readConfigIfNeeded() {
 	viper.SetDefault("Main.CachePeristFileName", "")
 	viper.SetDefault("Main.RestMaxActiveRequests", 500)
 	viper.SetDefault("Main.BackgroundWorkerCount", 4)
-	viper.SetDefault("Main.MaxOutRequests", 8)
+	viper.SetDefault("Main.MaxOutRequests", 0)
 	viper.SetDefault("Main.EnablePregeneration", 1)
 	viper.SetDefault("Main.PregenerationQueueSize", 10000)
 	viper.SetDefault("Main.MaxCacheAgeDays", 30)
@@ -97,10 +97,12 @@ func ConfigBackgroundWorkerCount() int {
 
 func ConfigMaxOutRequests() int {
 	val := ConfigGetIntWithDefault("Main.MaxOutRequests", 8)
-	val = int(math.Max(float64(val), float64(3)))
-	val = int(math.Min(float64(val), float64(30)))
-	backgroundWorkerCount := ConfigBackgroundWorkerCount()
-	val = int(math.Max(float64(val), float64(backgroundWorkerCount+1)))
+	if val > 0 { // 0 is also valid
+		val = int(math.Max(float64(val), float64(3)))
+		val = int(math.Min(float64(val), float64(30)))
+		backgroundWorkerCount := ConfigBackgroundWorkerCount()
+		val = int(math.Max(float64(val), float64(backgroundWorkerCount+1)))
+	}
 	return val
 }
 
