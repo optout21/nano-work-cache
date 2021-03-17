@@ -39,7 +39,8 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 			if err != nil {
 				fmt.Fprintln(w, `{"error":"action parse error"}`)
 			} else {
-				//log.Println("action", action)
+				//userAgent := req.Header["User-Agent"][0]
+				//log.Println("userAgent", userAgent, "remoteAddr", req.RemoteAddr, "action", action.Action)
 				handleReqWithRateLimit(action.Action, body, w)
 			}
 		}
