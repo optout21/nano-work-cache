@@ -10,7 +10,7 @@ import (
 var difficulty uint64 = 0xffffffc000000000
 var diffTime time.Time = time.Now().Add(-100 * time.Hour)
 
-const cacheExpiry time.Duration = 10 * time.Minute
+const cacheExpiry time.Duration = 60 * time.Second
 
 // GetDifficultyCached Get the current network difficulty, comes from RPC, cached for some minutes
 func GetDifficultyCached() uint64 {
