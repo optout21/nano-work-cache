@@ -25,8 +25,8 @@ func decActiveCount() int {
 
 // Handle incoming calls with rate limiting; if max is reached Overload error is returned
 func handleReqWithRateLimit(action string, respBody []byte, w http.ResponseWriter) {
-	defer decActiveCount()
 	incActiveCount()
+	defer decActiveCount()
 	if activeHandlerCount >= maxActiveRequests {
 		// overload, return error right away
 		log.Printf("Overload, %v active request handlers, max %v\n", activeHandlerCount, maxActiveRequests)
