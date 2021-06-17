@@ -24,8 +24,7 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 
 	switch req.Method {
 	case "GET":
-		fmt.Fprintf(w, "Welcome to my website!")
-		//http.ServeFile(w, r, "form.html")
+		fmt.Fprintf(w, "GET not supported")
 
 	case "POST":
 		body, err := ioutil.ReadAll(req.Body)
