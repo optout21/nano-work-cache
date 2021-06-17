@@ -40,7 +40,11 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 				fmt.Fprintln(w, `{"error":"action parse error"}`)
 			} else {
 				//userAgent := req.Header["User-Agent"][0]
-				//log.Println("userAgent", userAgent, "remoteAddr", req.RemoteAddr, "action", action.Action)
+				//if strings.HasPrefix(action.Action, "work_generate") {
+				//	var workGenerate workGenerateJson
+				//	_ = json.Unmarshal(body, &workGenerate)
+				//	log.Println("header", userAgent, "remoteAddr", req.RemoteAddr, "action", action.Action, "diff", workGenerate.Difficulty)
+				//}
 				handleReqWithRateLimit(action.Action, body, w)
 			}
 		}
