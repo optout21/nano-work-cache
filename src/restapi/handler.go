@@ -227,6 +227,10 @@ func handleReqSync(action string, reqBody []byte, w http.ResponseWriter) {
 		}
 		fmt.Fprintln(w, respJSON)
 
+	case "stop":
+		log.Println("'" + action + "' message received, ignoring")
+		fmt.Fprintln(w, `{"success":"`+action+`"}`)
+
 	default:
 		// proxy any other request unmodified
 		respJSON, err := proxyCall(action, string(reqBody))
